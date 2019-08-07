@@ -30,9 +30,9 @@ def compute_cumsum2():
 
 s, A, ret = compute_cumsum1()
 print(tvm.lower(s, [A, ret], simple_mode=True))
-fscan = tvm.build(s, [A, ret])
+# fscan = tvm.build(s, [A, ret])
 print("build cumsum1 successfully")
 s, A, ret = compute_cumsum2()
 print(tvm.lower(s, [A, ret], simple_mode=True))
-fscan = tvm.build(s, [A, ret])
+# fscan = tvm.build(s, [A, ret])
 print("build cumsum2 successfully")

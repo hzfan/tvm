@@ -372,17 +372,20 @@ def lower(sch,
     lower_phase3 = [x[1] for x in add_lower_pass if x[0] > 2]
 
     # Phase 0
+    print("phase 0...")
     if isinstance(sch, schedule.Schedule):
         stmt = form_body(sch)
 
     for f in lower_phase0:
         stmt = f(stmt)
     # Phase 1
+    print("phase 1...")
     stmt = ir_pass.StorageFlatten(stmt, binds, 64, cfg.instrument_bound_checkers)
     stmt = ir_pass.CanonicalSimplify(stmt)
     for f in lower_phase1:
         stmt = f(stmt)
     # Phase 2
+    print("phase 2...")
     if not simple_mode:
         stmt = ir_pass.LoopPartition(stmt, cfg.partition_const_loop)
     if cfg.disable_vectorize:
@@ -401,6 +404,7 @@ def lower(sch,
     for f in lower_phase2:
         stmt = f(stmt)
     # Phase 3
+    print("phase 3...")
     stmt = ir_pass.Simplify(stmt)
     stmt = ir_pass.LowerStorageAccessInfo(stmt)
     stmt = ir_pass.RemoveNoOp(stmt)
@@ -409,6 +413,7 @@ def lower(sch,
     for f in lower_phase3:
         stmt = f(stmt)
     # Instrument BoundCheckers
+    print("Instrument BoundCheckers...")
     if cfg.instrument_bound_checkers:
         stmt = ir_pass.InstrumentBoundCheckers(stmt)
     if simple_mode:

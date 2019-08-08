@@ -37,14 +37,17 @@ def compute_backward_cumprod(dtype, ndim, axis):
 
 
 def replay():
-    m = tvm.var("m")
-    n = tvm.var("n")
-    s_state = tvm.placeholder((n, m, n), dtype="int32")
-    s_init = tvm.compute((1, m, n), lambda *idx: 1)
-    s_update = tvm.compute((n, m, n), lambda i, j, k: s_state[i - 1, j, k] + 1)
+    a = tvm.var("a")
+    b = tvm.var("b")
+    c = tvm.var("c")
+    d = tvm.var("d")
+    e = tvm.var("e")
+    s_state = tvm.placeholder((a, b, c, d, e), dtype="int32")
+    s_init = tvm.compute((1, b, c, d, e), lambda *idx: 1)
+    s_update = tvm.compute((a, b, c, d, e), lambda i, j, k: s_state[i - 1, j, k] + 1)
     s_scan = tvm.scan(s_init, s_update, s_state)
     # ret = s_scan
-    ret = tvm.compute((n, m, n), lambda *idx: s_scan[idx])
+    ret = tvm.compute((a, b, c, d, e), lambda *idx: s_scan[idx])
     s = tvm.create_schedule(ret.op)
     return s, ret
 
@@ -59,7 +62,7 @@ def test():
 s, ret = replay()
 f = tvm.build(s, [ret])
 ctx = tvm.cpu()
-a = tvm.nd.array(_np.zeros((4, 6, 4), dtype="int32"), ctx)
+a = tvm.nd.array(_np.zeros((9, 9, 8, 10, 9), dtype="int32"), ctx)
 f(a)
 print(a)
 

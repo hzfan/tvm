@@ -45,7 +45,7 @@ def replay():
     s_update = tvm.compute((n, m, n), lambda i, j, k: s_state[i - 1, j, k] + 1)
     s_scan = tvm.scan(s_init, s_update, s_state)
     # ret = s_scan
-    ret = tvm.compute((n, m, n), lambda *idx: s_state[idx])
+    ret = tvm.compute((n, m, n), lambda *idx: s_scan[idx])
     s = tvm.create_schedule(ret.op)
     return s, ret
 

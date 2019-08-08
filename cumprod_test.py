@@ -23,8 +23,8 @@ def compute_backward_cumprod(dtype, ndim, axis):
                                                         tvm.const(0, dtype),
                                                         tvm.expr.Select(idx[0] == idx[-1],
                                                                         s_state[(idx[0] - 1, ) + idx[1:-1] + (idx[-1] - 1, )]
-                                                                        * X[swapaxis((idx[0] - 1, ) + idx[:-1], 0, axis)],
-                                                                        s_state[(idx[0] - 1,) + idx[1:]]
+                                                                        * X[swapaxis((idx[0] - 1, ) + idx[1:-1], 0, axis)],
+                                                                        s_state[(idx[0] - 1, ) + idx[1:]]
                                                                         * X[swapaxis(idx[:-1], 0, axis)])))
     s_scan = tvm.scan(s_init, s_update, s_state)   
     A = tvm.compute(sshape, lambda *idx: s_scan[idx] * out_grad[swapaxis(idx[:-1], 0, axis)])

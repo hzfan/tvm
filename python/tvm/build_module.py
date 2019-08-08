@@ -375,9 +375,11 @@ def lower(sch,
     print("phase 0...")
     if isinstance(sch, schedule.Schedule):
         stmt = form_body(sch)
-
+    
     for f in lower_phase0:
         stmt = f(stmt)
+    print("lowered stmt:")
+    print(stmt)
     # Phase 1
     print("phase 1...")
     stmt = ir_pass.StorageFlatten(stmt, binds, 64, cfg.instrument_bound_checkers)

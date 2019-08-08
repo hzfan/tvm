@@ -27,12 +27,11 @@ def compute_backward_cumprod(dtype, ndim, axis):
                                                                         s_state[(idx[0] - 1, ) + idx[1:]]
                                                                         * X[swapaxis(idx[:-1], 0, axis)])))
     s_scan = tvm.scan(s_init, s_update, s_state)
-    ret = s_scan
-    # A = tvm.compute(sshape, lambda *idx: s_scan[idx] * out_grad[swapaxis(idx[:-1], 0, axis)])
-    # k = tvm.reduce_axis((0, sshape[0]), name="k")
-    # ret = tvm.compute(ishape,
-    #                   lambda* idx: tvm.sum(A[(k,) + idx[:axis] + idx[axis + 1:] + (idx[axis],)],
-    #                                        axis=k), name="ret")
+    A = tvm.compute(sshape, lambda *idx: s_scan[idx] * out_grad[swapaxis(idx[:-1], 0, axis)])
+    k = tvm.reduce_axis((0, sshape[0]), name="k")
+    ret = tvm.compute(ishape,
+                      lambda* idx: tvm.sum(A[(k,) + idx[:axis] + idx[axis + 1:] + (idx[axis],)],
+                                           axis=k), name="ret")
     s = tvm.create_schedule(ret.op)
     return s, out_grad, X, ret
 
@@ -45,12 +44,18 @@ def test():
     return s, X
 
 
-s, out_grad, X, ret = compute_backward_cumprod('int32', 1, 0)
+s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 0)
 f = tvm.build(s, [out_grad, X, ret])
+m = 6
 n = 4
 ctx = tvm.cpu()
-a = tvm.nd.array(_np.ones((n,), dtype=out_grad.dtype), ctx)
-b = tvm.nd.array(_np.array([0, 4, 2, -1], dtype=X.dtype), ctx)
-c = tvm.nd.array(_np.zeros((n, n), dtype=ret.dtype), ctx)
+a = tvm.nd.array(_np.ones((m, n), dtype=out_grad.dtype), ctx)
+b = tvm.nd.array(_np.array([[-9, 4, 7, -6],
+                            [ 4, 5, 1, 5]
+                            [ 8, 1, 0, 0]
+                            [ 0, 8, -2, 4]
+                            [-9, 7, -8, 9]
+                            [ 0, 4, 2, -1]], dtype=X.dtype), ctx)
+c = tvm.nd.array(_np.zeros((m, n), dtype=ret.dtype), ctx)
 f(a, b, c)
 print(c)

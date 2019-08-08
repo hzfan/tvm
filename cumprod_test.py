@@ -75,6 +75,6 @@ b = tvm.nd.array(_np.array([[-9, 4, 7, -6],
                             [ 0, 8, -2, 4],
                             [-9, 7, -8, 9],
                             [ 0, 4, 2, -1]], dtype=X.dtype), ctx)
-c = tvm.nd.array(_np.zeros((n, m, n), dtype=ret.dtype), ctx)
+c = tvm.nd.array(_np.zeros((m, n), dtype=ret.dtype), ctx)
 f(a, b, c)
 print(c)

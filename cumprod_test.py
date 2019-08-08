@@ -44,13 +44,12 @@ def test():
     return s, X
 
 
-s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 1)
+s, out_grad, X, ret = compute_backward_cumprod('int32', 1, 0)
 f = tvm.build(s, [out_grad, X, ret])
 n = 3
-m = 3
 ctx = tvm.cpu()
-a = tvm.nd.array(_np.ones((m, n), dtype=out_grad.dtype), ctx)
-b = tvm.nd.array(_np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=X.dtype), ctx)
-c = tvm.nd.array(_np.zeros((m, n), dtype=ret.dtype), ctx)
+a = tvm.nd.array(_np.ones((n,), dtype=out_grad.dtype), ctx)
+b = tvm.nd.array(_np.array([[1, 2, 3]], dtype=X.dtype), ctx)
+c = tvm.nd.array(_np.zeros((n,), dtype=ret.dtype), ctx)
 f(a, b, c)
 print(c)

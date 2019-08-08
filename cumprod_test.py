@@ -27,7 +27,7 @@ def compute_backward_cumprod(dtype, ndim, axis):
                                                                         s_state[(idx[0] - 1, ) + idx[1:]]
                                                                         * X[swapaxis(idx[:-1], 0, axis)])))
     s_scan = tvm.scan(s_init, s_update, s_state)
-    A = tvm.compute(sshape, lambda *idx: s_scan[idx] * 0])
+    A = tvm.compute(sshape, lambda *idx: s_scan[idx] * 0)
     ret = A
     # k = tvm.reduce_axis((0, sshape[0]), name="k")
     # ret = tvm.compute(ishape,

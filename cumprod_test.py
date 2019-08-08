@@ -37,6 +37,17 @@ def compute_backward_cumprod(dtype, ndim, axis):
     return s, out_grad, X, ret
 
 
+def replay():
+    m = tvm.var("m")
+    n = tvm.var("n")
+    s_state = tvm.placeholder((n, m, n))
+    s_init = tvm.compute((1, m, n), lambda *idx: 1)
+    s_update = tvm.compute((n, m, n), lambda *idx: s_state[idx] + 1)
+    s_scan = tvm.scan(s_init, s_update, s_state)
+    ret = s_scan
+    s = tvm.create_schedule(ret.op)
+    return s, ret
+
 def test():
     m = tvm.var("m")
     n = tvm.var("n")
@@ -44,6 +55,13 @@ def test():
     s = tvm.create_schedule(X.op)
     return s, X
 
+
+s, ret = replay()
+f = tvm.build(s, [ret])
+ctx = tvm.cpu()
+a = tvm.nd.array(_np.zeros(4, 6, 4), ctx)
+f(a)
+print(a)
 
 s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 1)
 f = tvm.build(s, [out_grad, X, ret])

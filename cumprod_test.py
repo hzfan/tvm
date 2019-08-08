@@ -49,7 +49,7 @@ n = 2
 m = 3
 ctx = tvm.cpu()
 out_grad = tvm.nd.array(_np.ones((m, n), dtype=out_grad.dtype), ctx)
-X = tvm.nd.array(_np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], dtype=X.dtype]), ctx)
+X = tvm.nd.array(_np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=X.dtype), ctx)
 ret = tvm.nd.array(_np.zeros((m, n), dtype=ret.dtype), ctx)
 f(out_grad, X, ret)
 print(ret)

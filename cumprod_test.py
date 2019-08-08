@@ -59,7 +59,7 @@ def test():
 s, ret = replay()
 f = tvm.build(s, [ret])
 ctx = tvm.cpu()
-a = tvm.nd.array(_np.zeros(4, 6, 4), ctx)
+a = tvm.nd.array(_np.zeros(4, 6, 4, dtype="float32"), ctx)
 f(a)
 print(a)
 

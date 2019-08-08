@@ -40,7 +40,7 @@ def compute_backward_cumprod(dtype, ndim, axis):
 def replay():
     m = tvm.var("m")
     n = tvm.var("n")
-    s_state = tvm.placeholder((n, m, n))
+    s_state = tvm.placeholder((n, m, n), dtype="int32")
     s_init = tvm.compute((1, m, n), lambda *idx: 1)
     s_update = tvm.compute((n, m, n), lambda *idx: s_state[idx] + 1)
     s_scan = tvm.scan(s_init, s_update, s_state)
@@ -59,7 +59,7 @@ def test():
 s, ret = replay()
 f = tvm.build(s, [ret])
 ctx = tvm.cpu()
-a = tvm.nd.array(_np.zeros(4, 6, 4, dtype="float32"), ctx)
+a = tvm.nd.array(_np.zeros(4, 6, 4, dtype="int32"), ctx)
 f(a)
 print(a)
 

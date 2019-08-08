@@ -5,7 +5,7 @@ import numpy as _np
 def backward_compute_cumprod():
     m = tvm.var("m")
     n = tvm.var("n")
-    X = tvm.compute((m, n), lambda i, j: (i >= j) * 5, dtype='int32')
+    X = tvm.compute((m, n), lambda i, j: tvm.if_then_else(i <= j, 5, 10))
     s = tvm.create_schedule(X.op)
     return s, X
 

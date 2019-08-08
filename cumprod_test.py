@@ -50,11 +50,7 @@ m = 6
 n = 4
 ctx = tvm.cpu()
 a = tvm.nd.array(_np.ones((m, n), dtype=out_grad.dtype), ctx)
-b = tvm.nd.array(_np.array([[-9, 4, 7, -6],
-                            [ 4, 5, 1, 5],
-                            [ 8, 1, 0, 0],
-                            [ 0, 8, -2, 4],
-                            [-9, 7, -8, 9],
+b = tvm.nd.array(_np.array([[-9, 7, -8, 9],
                             [ 0, 4, 2, -1]], dtype=X.dtype), ctx)
 c = tvm.nd.array(_np.zeros((m, n), dtype=ret.dtype), ctx)
 f(a, b, c)

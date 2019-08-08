@@ -35,7 +35,7 @@ def compute_backward_cumprod(dtype, ndim, axis):
     return s, out_grad, X, ret
 
 
-def backward_compute_cumprod():
+def test():
     m = tvm.var("m")
     n = tvm.var("n")
     X = tvm.compute((m, n), lambda i, j: tvm.expr.Select(i <= j, 5, 10))
@@ -43,7 +43,7 @@ def backward_compute_cumprod():
     return s, X
 
 
-s, out_grad, X, ret = backward_compute_cumprod('int32', 2, 0)
+s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 0)
 f = tvm.build(s, [out_grad, X, ret])
 n = 2
 m = 3

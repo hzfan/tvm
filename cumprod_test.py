@@ -18,15 +18,16 @@ def compute_backward_cumprod(dtype, ndim, axis):
                          lambda *idx: tvm.expr.Select(idx[-1] > 0,
                                                       tvm.const(0, dtype),
                                                       tvm.const(1, dtype)))
-    s_update = tvm.scan(sshape,
-                        lambda *idx: tvm.expr.Select(idx[0] < idx[-1], 
-                                                     tvm.const(0, dtype),
-                                                     tvm.expr.Select(idx[0] == idx[-1],
-                                                                     s_state[(idx[0] - 1, ) + idx[1:-1] + (idx[-1] - 1, )]
-                                                                     * X[swapaxis((idx[0] - 1, ) + idx[:-1], 0, axis)],
-                                                                     s_state[(idx[0] - 1,) + idx[1:]]
-                                                                     * X[swapaxis(idx[:-1], 0, axis)])))
-    A = tvm.compute(sshape, lambda *idx: s_state[idx] * out_grad[swapaxis(idx[:-1], 0, axis)])
+    s_update = tvm.compute(sshape,
+                           lambda *idx: tvm.expr.Select(idx[0] < idx[-1], 
+                                                        tvm.const(0, dtype),
+                                                        tvm.expr.Select(idx[0] == idx[-1],
+                                                                        s_state[(idx[0] - 1, ) + idx[1:-1] + (idx[-1] - 1, )]
+                                                                        * X[swapaxis((idx[0] - 1, ) + idx[:-1], 0, axis)],
+                                                                        s_state[(idx[0] - 1,) + idx[1:]]
+                                                                        * X[swapaxis(idx[:-1], 0, axis)])))
+    s_scan = tvm.scan(s_init, s_update, s_state)   
+    A = tvm.compute(sshape, lambda *idx: s_scan[idx] * out_grad[swapaxis(idx[:-1], 0, axis)])
     k = tvm.reduce_axis((sshape[0],) + (0,) * ndim, name="k")
     ret = tvm.compute(ishape,
                       lambda* idx: tvm.sum(A[(k,) + idx[:axis] + idx[axis + 1:] + (idx[axis],)],

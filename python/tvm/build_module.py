@@ -386,6 +386,8 @@ def lower(sch,
     stmt = ir_pass.CanonicalSimplify(stmt)
     for f in lower_phase1:
         stmt = f(stmt)
+    print("lowered stmt:")
+    print(stmt)
     # Phase 2
     print("phase 2...")
     if not simple_mode:

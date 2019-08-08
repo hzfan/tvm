@@ -1,6 +1,6 @@
 import tvm
 
-def backward_compute_cumprod()
+def backward_compute_cumprod():
     m = tvm.var("m")
     n = tvm.var("n")
     X = tvm.compute((m, n), lambda i, j: 1 if i < j else 0)

@@ -44,7 +44,7 @@ def replay():
     e = tvm.var("e")
     s_state = tvm.placeholder((a, b, c, d, e), dtype="int32")
     s_init = tvm.compute((1, b, c, d, e), lambda *idx: 1)
-    s_update = tvm.compute((a, b, c, d, e), lambda i, j, k: s_state[i - 1, j, k] + 1)
+    s_update = tvm.compute((a, b, c, d, e), lambda i, j, k, l, m: s_state[i - 1, j, k, l, m] + 1)
     s_scan = tvm.scan(s_init, s_update, s_state)
     # ret = s_scan
     ret = tvm.compute((a, b, c, d, e), lambda *idx: s_scan[idx])

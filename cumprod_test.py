@@ -1,4 +1,6 @@
 import tvm
+import numpy as _np
+
 
 def backward_compute_cumprod():
     m = tvm.var("m")

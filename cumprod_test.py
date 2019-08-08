@@ -46,7 +46,7 @@ def test():
 
 s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 1)
 f = tvm.build(s, [out_grad, X, ret])
-m = 6
+m = 2
 n = 4
 ctx = tvm.cpu()
 a = tvm.nd.array(_np.ones((m, n), dtype=out_grad.dtype), ctx)

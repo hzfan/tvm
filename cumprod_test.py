@@ -27,12 +27,11 @@ def compute_backward_cumprod(dtype, ndim, axis):
                                                                         s_state[(idx[0] - 1, ) + idx[1:]]
                                                                         * X[swapaxis(idx[:-1], 0, axis)])))
     s_scan = tvm.scan(s_init, s_update, s_state)
-    # A = tvm.compute(sshape, lambda *idx: s_scan[idx])
-    ret = s_scan
-    # k = tvm.reduce_axis((0, sshape[0]), name="k")
-    # ret = tvm.compute(ishape,
-    #                   lambda* idx: tvm.sum(A[(k,) + idx[:axis] + idx[axis + 1:] + (idx[axis],)],
-    #                                        axis=k), name="ret")
+    A = tvm.compute(sshape, lambda *idx: s_scan[idx])
+    k = tvm.reduce_axis((0, sshape[0]), name="k")
+    ret = tvm.compute(ishape,
+                      lambda* idx: tvm.sum(A[(k,) + idx[:axis] + idx[axis + 1:] + (idx[axis],)],
+                                           axis=k), name="ret")
     s = tvm.create_schedule(ret.op)
     return s, out_grad, X, ret
 

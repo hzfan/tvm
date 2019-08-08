@@ -44,7 +44,7 @@ def test():
     return s, X
 
 
-s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 0)
+s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 1)
 f = tvm.build(s, [out_grad, X, ret])
 n = 3
 m = 3

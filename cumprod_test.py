@@ -11,9 +11,9 @@ def compute_backward_cumprod(dtype, ndim, axis):
 
     ishape = [tvm.var("shape" + str(i)) for i in range(ndim)]
     sshape = swapaxis(ishape, 0, axis) + [ishape[axis]]
-    X = tvm.placeholder(ishape, dtype=dtype)  # input data
-    out_grad = tvm.placeholder(ishape, dtype=dtype)  # output grad
-    s_state = tvm.placeholder(sshape, dtype=dtype)
+    X = tvm.placeholder(ishape, dtype=dtype, name="idata")  # input data
+    out_grad = tvm.placeholder(ishape, dtype=dtype, name="ograd")  # output grad
+    s_state = tvm.placeholder(sshape, dtype=dtype, name="state")
     s_init = tvm.compute([1] + sshape[1:], 
                          lambda *idx: tvm.expr.Select(idx[-1] > 0,
                                                       tvm.const(0, dtype),
@@ -59,12 +59,13 @@ def test():
     return s, X
 
 
-# s, ret = replay()
-# f = tvm.build(s, [ret])
-# ctx = tvm.cpu()
-# a = tvm.nd.array(_np.zeros((4, 6, 5, 4), dtype="int32"), ctx)
-# f(a)
-# print(a)
+s, ret = replay()
+print(lower(s, [ret], simple_mode=True))
+f = tvm.build(s, [ret])
+ctx = tvm.cpu()
+a = tvm.nd.array(_np.zeros((5, 1, 5, 5), dtype="int32"), ctx)
+f(a)
+print(a)
 
 s, out_grad, X, ret = compute_backward_cumprod('int32', 3, 2)
 print(tvm.lower(s, [out_grad, X, ret], simple_mode=True))

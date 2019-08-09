@@ -18,6 +18,7 @@ def compute_backward_cumprod(dtype, ndim, axis):
                          lambda *idx: tvm.expr.Select(idx[-1] > 0,
                                                       tvm.const(0, dtype),
                                                       tvm.const(1, dtype)))
+    print("sshape = {}".format(sshape))
     s_update = tvm.compute(sshape,
                            lambda *idx: tvm.expr.Select(idx[0] < idx[-1], 
                                                         tvm.const(0, dtype),

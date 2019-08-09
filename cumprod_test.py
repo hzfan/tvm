@@ -31,10 +31,10 @@ def compute_backward_cumprod(dtype, ndim, axis):
 
 
 def replay():
-    a = tvm.var("a")
     b = tvm.var("b")
     c = tvm.var("c")
     d = tvm.var("d")
+    a = d
     s_state = tvm.placeholder((a, b, c, d), dtype="int32")
     s_init = tvm.compute((1, b, c, d), lambda *idx: 1)
     s_update = tvm.compute((a, b, c, d), lambda i, j, k, l: s_state[i - 1, j, k, l] + 1)

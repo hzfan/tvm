@@ -9,24 +9,58 @@ def compute_backward_cumprod(dtype, ndim, axis):
             ret[axis1], ret[axis2] = ret[axis2], ret[axis1]
         return ret if isinstance(idx, list) else tuple(ret)
 
-    ishape = [tvm.var("shape" + str(i)) for i in range(ndim)]
+    ishape = [tvm.var() for _ in range(ndim)]
     sshape = swapaxis(ishape, 0, axis) + [ishape[axis]]
-    X = tvm.placeholder(ishape, dtype=dtype, name="idata")  # input data
-    out_grad = tvm.placeholder(ishape, dtype=dtype, name="ograd")  # output grad
-    s_state = tvm.placeholder(sshape, dtype=dtype, name="state")
+    X = tvm.placeholder(ishape, dtype=dtype)  # input data
+    out_grad = tvm.placeholder(ishape, dtype=dtype)  # output grad
+    s_state = tvm.placeholder(sshape, dtype=dtype)
     s_init = tvm.compute([1] + sshape[1:], 
-                         lambda *idx: 1)
-    print("sshape = {}".format(sshape))
+                         lambda *idx: tvm.expr.Select(idx[-1] > 0,
+                                                      tvm.const(0, dtype),
+                                                      tvm.const(1, dtype)))
     s_update = tvm.compute(sshape,
-                           lambda *idx: s_state[(idx[0] - 1,) + idx[1:]] + X[swapaxis(idx[:-1], 0, axis)])
+                           lambda *idx: tvm.expr.Select(idx[0] < idx[-1], 
+                                                        tvm.const(0, dtype),
+                                                        tvm.expr.Select(idx[0] == idx[-1],
+                                                                        s_state[(idx[0] - 1, ) + idx[1:-1] + (idx[-1] - 1, )]
+                                                                        * X[swapaxis((idx[0] - 1, ) + idx[1:-1], 0, axis)],
+                                                                        s_state[(idx[0] - 1, ) + idx[1:]]
+                                                                        * X[swapaxis(idx[:-1], 0, axis)])))
     s_scan = tvm.scan(s_init, s_update, s_state)
-    A = tvm.compute(sshape, lambda *idx: s_scan[idx], name="mul")
+    A = tvm.compute(sshape, lambda *idx: s_scan[idx] * out_grad[swapaxis(idx[:-1], 0, axis)])
     k = tvm.reduce_axis((0, sshape[0]), name="k")
     ret = tvm.compute(ishape,
                       lambda* idx: tvm.sum(A[(k,) + idx[1: axis] + (idx[0],) + idx[axis + 1:] + (idx[axis],)],
                                            axis=k), name="ret")
     s = tvm.create_schedule(ret.op)
     return s, out_grad, X, ret
+
+
+# def compute_backward_cumprod(dtype, ndim, axis):
+#     def swapaxis(idx, axis1, axis2):
+#         ret = list(idx)
+#         if axis1 != axis2:
+#             ret[axis1], ret[axis2] = ret[axis2], ret[axis1]
+#         return ret if isinstance(idx, list) else tuple(ret)
+
+#     ishape = [tvm.var("shape" + str(i)) for i in range(ndim)]
+#     sshape = swapaxis(ishape, 0, axis) + [ishape[axis]]
+#     X = tvm.placeholder(ishape, dtype=dtype, name="idata")  # input data
+#     out_grad = tvm.placeholder(ishape, dtype=dtype, name="ograd")  # output grad
+#     s_state = tvm.placeholder(sshape, dtype=dtype, name="state")
+#     s_init = tvm.compute([1] + sshape[1:], 
+#                          lambda *idx: 1)
+#     print("sshape = {}".format(sshape))
+#     s_update = tvm.compute(sshape,
+#                            lambda *idx: s_state[(idx[0] - 1,) + idx[1:]] + X[swapaxis(idx[:-1], 0, axis)])
+#     s_scan = tvm.scan(s_init, s_update, s_state)
+#     A = tvm.compute(sshape, lambda *idx: s_scan[idx], name="mul")
+#     k = tvm.reduce_axis((0, sshape[0]), name="k")
+#     ret = tvm.compute(ishape,
+#                       lambda* idx: tvm.sum(A[(k,) + idx[1: axis] + (idx[0],) + idx[axis + 1:] + (idx[axis],)],
+#                                            axis=k), name="ret")
+#     s = tvm.create_schedule(ret.op)
+#     return s, out_grad, X, ret
 
 
 def replay():

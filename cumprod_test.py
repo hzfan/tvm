@@ -60,7 +60,7 @@ def test():
 
 
 s, ret = replay()
-print(lower(s, [ret], simple_mode=True))
+print(tvm.lower(s, [ret], simple_mode=True))
 f = tvm.build(s, [ret])
 ctx = tvm.cpu()
 a = tvm.nd.array(_np.zeros((5, 1, 5, 5), dtype="int32"), ctx)

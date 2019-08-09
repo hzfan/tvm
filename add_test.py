@@ -5,7 +5,7 @@ def compute_add():
     n = tvm.var('n')
     m = tvm.var('m')
     X = tvm.placeholder((n, m), dtype='float32', name='X')
-    Y = tvm.placeholder((n, m), dtype='flaot32', name='Y')
+    Y = tvm.placeholder((n, m), dtype='float32', name='Y')
     Y = tvm.compute((n, m), lambda i, j: X[i, j] + 1)
     s = tvm.create_schedule(Y.op)
     return s, X, Y

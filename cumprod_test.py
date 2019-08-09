@@ -41,7 +41,7 @@ def replay():
     s_scan = tvm.scan(s_init, s_update, s_state)
     A = tvm.compute((a, b, c, d), lambda *idx: s_scan[idx])
     k = tvm.reduce_axis((0, a), name="k")
-    ret = tvm.compute((b, c, d), lambda *idx: tvm.sum(A[(k, b, c, d)], axis=k), name="sum")
+    ret = tvm.compute((b, c, d), lambda b, c, d: tvm.sum(A[(k, b, c, d)], axis=k), name="sum")
     s = tvm.create_schedule(ret.op)
     return s, ret
 

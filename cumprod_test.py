@@ -39,8 +39,9 @@ def replay():
     s_init = tvm.compute((1, b, c, d), lambda *idx: 1)
     s_update = tvm.compute((a, b, c, d), lambda i, j, k, l: s_state[i - 1, j, k, l] + 1)
     s_scan = tvm.scan(s_init, s_update, s_state)
-    # ret = s_scan
-    ret = tvm.compute((a, b, c, d), lambda *idx: s_scan[idx])
+    A = tvm.compute((a, b, c, d), lambda *idx: s_scan[idx])
+    k = tvm.reduce_axis((0, a), name="k")
+    ret = tvm.compute((b, c, d), lambda *idx: tvm.sum(A[(k, b, c, d)], axis=k), name="sum")
     s = tvm.create_schedule(ret.op)
     return s, ret
 
@@ -56,7 +57,7 @@ s, ret = replay()
 print(tvm.lower(s, [ret], simple_mode=True))
 f = tvm.build(s, [ret])
 ctx = tvm.cpu()
-a = tvm.nd.array(_np.zeros((5, 1, 5, 5), dtype="int32"), ctx)
+a = tvm.nd.array(_np.zeros((5, 1, 5), dtype="int32"), ctx)
 f(a)
 print(a)
 

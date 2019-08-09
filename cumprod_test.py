@@ -58,25 +58,22 @@ def test():
     return s, X
 
 
-s, ret = replay()
-f = tvm.build(s, [ret])
-ctx = tvm.cpu()
-a = tvm.nd.array(_np.zeros((4, 6, 5, 4), dtype="int32"), ctx)
-f(a)
-print(a)
+# s, ret = replay()
+# f = tvm.build(s, [ret])
+# ctx = tvm.cpu()
+# a = tvm.nd.array(_np.zeros((4, 6, 5, 4), dtype="int32"), ctx)
+# f(a)
+# print(a)
 
-s, out_grad, X, ret = compute_backward_cumprod('int32', 2, 1)
+s, out_grad, X, ret = compute_backward_cumprod('int32', 3, 2)
 f = tvm.build(s, [out_grad, X, ret])
-m = 6
-n = 4
 ctx = tvm.cpu()
-a = tvm.nd.array(_np.ones((m, n), dtype=out_grad.dtype), ctx)
-b = tvm.nd.array(_np.array([[-9, 4, 7, -6],
-                            [ 4, 5, 1, 5],
-                            [ 8, 1, 0, 0],
-                            [ 0, 8, -2, 4],
-                            [-9, 7, -8, 9],
-                            [ 0, 4, 2, -1]], dtype=X.dtype), ctx)
-c = tvm.nd.array(_np.zeros((m, n), dtype=ret.dtype), ctx)
+a = tvm.nd.array(_np.ones((5, 1, 5), dtype=out_grad.dtype), ctx)
+b = tvm.nd.array(_np.array([[[7, 0, 0, -6, -9]],
+                            [[-7, 2, -1, 1, -7]],
+                            [[5, -6, -6, 0, 7]],
+                            [[1, -5, 7, -3, -3]],
+                            [[2, -8, 0, 0, 0]]], dtype=X.dtype), ctx)
+c = tvm.nd.array(_np.zeros((5, 1, 5), dtype=ret.dtype), ctx)
 f(a, b, c)
 print(c)

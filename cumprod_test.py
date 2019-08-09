@@ -15,9 +15,7 @@ def compute_backward_cumprod(dtype, ndim, axis):
     out_grad = tvm.placeholder(ishape, dtype=dtype, name="ograd")  # output grad
     s_state = tvm.placeholder(sshape, dtype=dtype, name="state")
     s_init = tvm.compute([1] + sshape[1:], 
-                         lambda *idx: tvm.expr.Select(idx[-1] > 0,
-                                                      tvm.const(0, dtype),
-                                                      tvm.const(1, dtype)))
+                         lambda *idx: 1)
     print("sshape = {}".format(sshape))
     s_update = tvm.compute(sshape,
                            lambda *idx: s_state[(idx[0] - 1,) + idx[1:]] + X[swapaxis(idx[:-1], 0, axis)])

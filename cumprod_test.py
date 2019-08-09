@@ -9,7 +9,7 @@ def compute_backward_cumprod(dtype, ndim, axis):
             ret[axis1], ret[axis2] = ret[axis2], ret[axis1]
         return ret if isinstance(idx, list) else tuple(ret)
 
-    ishape = [tvm.var("i" + i) for i in range(ndim)]
+    ishape = [tvm.var("i" + str(i)) for i in range(ndim)]
     sshape = swapaxis(ishape, 0, axis) + [tvm.var("new")]
     X = tvm.placeholder(ishape, dtype=dtype)  # input data
     out_grad = tvm.placeholder(ishape, dtype=dtype)  # output grad

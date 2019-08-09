@@ -13,8 +13,8 @@ def compute_add():
 
 s, X, Y = compute_add()
 f = tvm.build(s, [X, Y])
-data_np = _np.array([[1, 2, 3], [4, 5, 6]])
-data = tvm.nd.array(data_np, dtype='float32')
-output = tvm.nd.array(_np.zeros(2, 3), dtype='float32')
+data_np = _np.array([[1, 2, 3], [4, 5, 6]], dtype='float32')
+data = tvm.nd.array(data_np)
+output = tvm.nd.array(_np.zeros((2, 3), dtype='float32'))
 f(data, output)
 print(output)

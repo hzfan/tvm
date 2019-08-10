@@ -56,8 +56,6 @@ def vcumprod(dtype, ndim, axis):
     axes = [axis for axis in ret.op.axis]
     fused = s[ret].fuse(*axes)
     s[ret].parallel(fused)
-    axes = [axis for axis in s_update.op.axis]
-    fused = s[s_update].fuse(*axes)
     return s, [X, ret]
 
 

@@ -23,7 +23,7 @@ def compute_cumprod(dtype, ndim, axis):
 
 def cuda_vcumprod(dtype, ndim, axis):
     s, X, ret, s_init, s_update = compute_cumprod(dtype, ndim, axis)
-    num_thread = 64
+    num_thread = 4
     s_list = [s_init, s_update]
     c_list = [ret]
     for (i, t) in enumerate(s_list):

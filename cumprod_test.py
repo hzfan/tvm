@@ -59,19 +59,15 @@ def vcumprod(dtype, ndim, axis):
     return s, [X, ret]
 
 
-s, [X, ret] = cuda_vcumprod('int32', 3, 2)
-# s, [X, ret] = vcumprod('int32', 3, 2)
+s, [X, ret] = cuda_vcumprod('int32', 1, 0)
+# s, [X, ret] = vcumprod('int32', 1, 0)
 print(tvm.lower(s, [X, ret], simple_mode=True))
 lowered = tvm.lower(s, [X, ret], name="cumprod")
 f = tvm.build(lowered, target="cuda")
 ctx = tvm.gpu(0)
 # f = tvm.build(lowered, target="llvm")
 # ctx = tvm.cpu()
-a = tvm.nd.array(_np.array([[[7, 0, 0, -6, -9]],
-                            [[-7, 2, -1, 1, -7]],
-                            [[5, -6, -6, 0, 7]],
-                            [[1, -5, 7, -3, -3]],
-                            [[2, -8, 0, 0, 0]]], dtype=X.dtype), ctx)
-b = tvm.nd.array(_np.zeros((5, 1, 5), dtype=ret.dtype), ctx)
+a = tvm.nd.array(_np.array([1, 2, 3, 4, 5], dtype=X.dtype), ctx)
+b = tvm.nd.array(_np.zeros((5,), dtype=ret.dtype), ctx)
 f(a, b)
 print(b)

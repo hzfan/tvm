@@ -47,17 +47,17 @@ def cuda_vcumprod(dtype, ndim, axis):
 
 def vcumprod(dtype, ndim, axis):
     s, X, ret, s_init, s_update = compute_cumprod(dtype, ndim, axis)
-    # axes = [axis for axis in s_init.op.axis[1:]]
-    # fused = s[s_init].fuse(*axes)
-    # s[s_init].parallel(fused)
-    # axes = [axis for axis in s_update.op.axis[1:]]
-    # fused = s[s_update].fuse(*axes)
-    # s[s_update].parallel(fused)
-    # axes = [axis for axis in ret.op.axis]
-    # fused = s[ret].fuse(*axes)
-    # s[ret].parallel(fused)
-    # axes = [axis for axis in s_update.op.axis]
-    # fused = s[s_update].fuse(*axes)
+    axes = [axis for axis in s_init.op.axis[1:]]
+    fused = s[s_init].fuse(*axes)
+    s[s_init].parallel(fused)
+    axes = [axis for axis in s_update.op.axis[1:]]
+    fused = s[s_update].fuse(*axes)
+    s[s_update].parallel(fused)
+    axes = [axis for axis in ret.op.axis]
+    fused = s[ret].fuse(*axes)
+    s[ret].parallel(fused)
+    axes = [axis for axis in s_update.op.axis]
+    fused = s[s_update].fuse(*axes)
     return s, [X, ret]
 
 

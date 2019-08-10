@@ -30,16 +30,16 @@ def cuda_vcumprod(dtype, ndim, axis):
         axes = [axis for axis in t.op.axis[1:]]
         fused = s[t].fuse(*axes)
         bx, tx = s[t].split(fused, factor=num_thread)
-        block_x = tvm.thread_axis("blockIdx.x_s" + str(i))
-        thread_x = tvm.thread_axis("threadIdx.x_s" + str(i))
+        block_x = tvm.thread_axis("blockIdx.x")
+        thread_x = tvm.thread_axis("threadIdx.x")
         s[t].bind(bx, block_x)
         s[t].bind(tx, thread_x)
     for (i, t) in enumerate(c_list):
         axes = [axis for axis in t.op.axis]
         fused = s[t].fuse(*axes)
         bx, tx = s[t].split(fused, factor=num_thread)
-        block_x = tvm.thread_axis("blockIdx.x_c" + str(i))
-        thread_x = tvm.thread_axis("threadIdx.x_c" + str(i))
+        block_x = tvm.thread_axis("blockIdx.x")
+        thread_x = tvm.thread_axis("threadIdx.x")
         s[t].bind(bx, block_x)
         s[t].bind(tx, thread_x)
     return s, [X, ret]

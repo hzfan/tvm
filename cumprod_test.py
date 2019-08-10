@@ -45,11 +45,30 @@ def cuda_vcumprod(dtype, ndim, axis):
     return s, [X, ret]
 
 
-s, [X, ret] = cuda_vcumprod('int32', 3, 2)
+def vcumprod(dtype, ndim, axis):
+    s, X, ret, s_init, s_update = compute_cumprod(dtype, ndim, axis)
+    axes = [axis for axis in s_init.op.axis[1:]]
+    fused = s[s_init].fuse(*axes)
+    s[s_init].parallel(fused)
+    axes = [axis for axis in s_update.op.axis[1:]]
+    fused = s[s_update].fuse(*axes)
+    s[s_update].parallel(fused)
+    axes = [axis for axis in ret.op.axis]
+    fused = s[ret].fuse(*axes)
+    s[ret].parallel(fused)
+    # axes = [axis for axis in s_update.op.axis]
+    # fused = s[s_update].fuse(*axes)
+    return s, [X, ret]
+
+
+# s, [X, ret] = cuda_vcumprod('int32', 3, 2)
+s, [X, ret] = vcumprod('int32', 3, 2)
 print(tvm.lower(s, [X, ret], simple_mode=True))
 lowered = tvm.lower(s, [X, ret], name="cumprod")
-f = tvm.build(lowered, target="cuda")
-ctx = tvm.gpu(0)
+# f = tvm.build(lowered, target="cuda")
+# ctx = tvm.gpu(0)
+f = tvm.build(lowered, target="cpu")
+ctx = tvm.cpu()
 a = tvm.nd.array(_np.array([[[7, 0, 0, -6, -9]],
                             [[-7, 2, -1, 1, -7]],
                             [[5, -6, -6, 0, 7]],

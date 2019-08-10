@@ -59,7 +59,8 @@ def vcumprod(dtype, ndim, axis):
     return s, [X, ret]
 
 
-s, [X, ret] = cuda_vcumprod('int32', 1, 0)
+# AllTypes = ["float32", "float64", "float16", "uint8", "int8", "int32", "int64"]
+s, [X, ret] = cuda_vcumprod('float16', 1, 0)
 # s, [X, ret] = vcumprod('int32', 1, 0)
 print(tvm.lower(s, [X, ret], simple_mode=True))
 lowered = tvm.lower(s, [X, ret], name="cumprod")

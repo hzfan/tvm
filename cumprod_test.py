@@ -67,7 +67,7 @@ def unravel(dtype, ndim):
     s = tvm.create_schedule(ret.op)
     axes = [axis for axis in ret.op.axis[:]]
     fused = s[ret].fuse(*axes)
-    bx, tx = s[tret.split(fused, factor=64)
+    bx, tx = s[ret].split(fused, factor=64)
     block_x = tvm.thread_axis("blockIdx.x")
     thread_x = tvm.thread_axis("threadIdx.x")
     s[ret].bind(bx, block_x)

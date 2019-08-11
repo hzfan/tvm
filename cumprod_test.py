@@ -65,6 +65,13 @@ def unravel(dtype, ndim):
     X = tvm.placeholder(ishape, name='X', dtype=dtype)
     ret = topi.reshape(X, (tvm.var(),))
     s = tvm.create_schedule(ret.op)
+    axes = [axis for axis in ret.op.axis[:]]
+    fused = s[ret].fuse(*axes)
+    bx, tx = s[tret.split(fused, factor=64)
+    block_x = tvm.thread_axis("blockIdx.x")
+    thread_x = tvm.thread_axis("threadIdx.x")
+    s[ret].bind(bx, block_x)
+    s[ret].bind(tx, thread_x)
     return s, [X, ret]
 
 

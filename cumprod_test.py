@@ -1,4 +1,5 @@
 import tvm
+import topi
 import numpy as _np
 
 
@@ -8,7 +9,7 @@ def compute_cumprod(dtype, ndim, axis):
         if axis1 != axis2:
             ret[axis1], ret[axis2] = ret[axis2], ret[axis1]
         return ret
-
+    
     ishape = [tvm.var() for _ in range(ndim)]
     oshape = swapaxis(ishape, 0, axis)
     X = tvm.placeholder(ishape, name='X', dtype=dtype)
@@ -59,18 +60,36 @@ def vcumprod(dtype, ndim, axis):
     return s, [X, ret]
 
 
-# AllTypes = ["float32", "float64", "float16", "uint8", "int8", "int32", "int64"]
-s, [X, ret] = cuda_vcumprod('int32', 1, 0)
-# s, [X, ret] = vcumprod('int32', 1, 0)
+def unravel(dtype, ndim):
+    ishape = [tvm.var() for _ in range(ndim)]
+    X = tvm.placeholder(ishape, name='X', dtype=dtype)
+    ret = tvm.topi.reshape(X, (tvm.var(),))
+    s = tvm.create_schedule(ret.op)
+    return s, [X, ret]
+
+
+s, [X, ret] = unravel('int32', 3)
 print(tvm.lower(s, [X, ret], simple_mode=True))
-lowered = tvm.lower(s, [X, ret], name="cumprod")
-f = tvm.build(lowered, target="cuda")
-ctx = tvm.gpu(0)
-# f = tvm.build(lowered, target="llvm")
-# ctx = tvm.cpu()
-# a = tvm.nd.array(_np.empty((0,), dtype=X.dtype), ctx)
-# b = tvm.nd.array(_np.empty((0,), dtype=ret.dtype), ctx)
-a = tvm.nd.array(_np.array([1], dtype=X.dtype), ctx)
-b = tvm.nd.array(_np.empty((1,), dtype=ret.dtype), ctx)
+lowered = tvm.lower(s, [X, ret], name="unravel")
+f = tvm.build(lowered, target="llvm")
+ctx = tvm.cpu()
+a = tvm.nd.array(_np.ones((3, 3, 3), dtype=X.dtype), ctx)
+b = tvm.nd.array(_np.zeros((3 * 3 * 3, ), dtype=ret.dtype), ctx)
 f(a, b)
 print(b)
+
+# # AllTypes = ["float32", "float64", "float16", "uint8", "int8", "int32", "int64"]
+# s, [X, ret] = cuda_vcumprod('int32', 2, 1)
+# # s, [X, ret] = vcumprod('int32', 1, 0)
+# print(tvm.lower(s, [X, ret], simple_mode=True))
+# lowered = tvm.lower(s, [X, ret], name="cumprod")
+# f = tvm.build(lowered, target="cuda")
+# ctx = tvm.gpu(0)
+# # f = tvm.build(lowered, target="llvm")
+# # ctx = tvm.cpu()
+# # a = tvm.nd.array(_np.empty((0,), dtype=X.dtype), ctx)
+# # b = tvm.nd.array(_np.empty((0,), dtype=ret.dtype), ctx)
+# a = tvm.nd.array(_np.array([1], dtype=X.dtype), ctx)
+# b = tvm.nd.array(_np.empty((1,), dtype=ret.dtype), ctx)
+# f(a, b)
+# print(b)

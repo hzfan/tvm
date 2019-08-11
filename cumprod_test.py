@@ -63,7 +63,7 @@ def vcumprod(dtype, ndim, axis):
 def unravel(dtype, ndim):
     ishape = [tvm.var() for _ in range(ndim)]
     X = tvm.placeholder(ishape, name='X', dtype=dtype)
-    ret = tvm.topi.reshape(X, (tvm.var(),))
+    ret = topi.reshape(X, (tvm.var(),))
     s = tvm.create_schedule(ret.op)
     return s, [X, ret]
 

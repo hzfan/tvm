@@ -44,9 +44,9 @@ import numpy as np
 import tvm
 
 # The sizes of inputs and filters
-batch = 257
-in_channel = 257
-out_channel = 513
+batch = 256
+in_channel = 256
+out_channel = 512
 in_size = 15
 kernel = 3
 pad = 1

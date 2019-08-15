@@ -43,6 +43,8 @@ channel, batch.
 import numpy as np
 import tvm
 
+# Convolution: 95.096874 ms
+# Convolution: 214.706858 ms
 # The sizes of inputs and filters
 batch = 255
 in_channel = 255
@@ -233,6 +235,7 @@ s[WW].vectorize(fi)  # vectorize memory load
 # latency of convolution.
 #
 
+print(tvm.lower(s, [A, W, B], simple_mode=True))
 func = tvm.build(s, [A, W, B], 'cuda')
 ctx = tvm.gpu(0)
 a_np = np.random.uniform(size=(in_size, in_size, in_channel, batch)).astype(A.dtype)

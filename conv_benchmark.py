@@ -46,9 +46,9 @@ import tvm
 # Convolution: 95.096874 ms
 # Convolution: 214.706858 ms
 # The sizes of inputs and filters
-batch = 255
-in_channel = 255
-out_channel = 511
+batch = 257
+in_channel = 257
+out_channel = 513
 in_size = 14
 kernel = 3
 pad = 1

@@ -47,7 +47,7 @@ import tvm
 batch = 256
 in_channel = 256
 out_channel = 512
-in_size = 14
+in_size = 15
 kernel = 3
 pad = 1
 stride = 1

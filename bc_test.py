@@ -1,4 +1,5 @@
 import tvm
+import numpy as _np
 
 def compute_backward_vadd(dtype, ndim, reduce1st):
     ishape = [tvm.var() for _ in range(ndim)]
@@ -21,7 +22,7 @@ def backward_vadd(dtype, ndim, reduce1st):
 s, [X, ret] = backward_vadd('float32', 2, 1)
 print(tvm.lower(s, [X, ret], simple_mode=True))
 f = tvm.build(s, [X, ret])
-data = tvm.nd.array([[1, 2, 3], [4, 5, 6]], dtype='float32')
-ret = tvm.nd.array([[0, 0, 0]], dtype='float32')
+data = tvm.nd.array(_np.array([[1, 2, 3], [4, 5, 6]], dtype='float32'))
+ret = tvm.nd.array(_np.array([[0, 0, 0]], dtype='float32'))
 f(data, ret)
 print(ret)

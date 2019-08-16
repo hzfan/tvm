@@ -2,7 +2,7 @@ import tvm
 
 def compute_backward_vadd(dtype, ndim, reduce1st):
     ishape = [tvm.var() for _ in range(ndim)]
-    odim = (len(ishape) + 1 - axes[0]) // 2
+    odim = (len(ishape) + 1 - reduce1st) // 2
     oshape = [tvm.var() for _ in range(odim)]
     X = tvm.placeholder(ishape, name='X', dtype=dtype)
     ret = tvm.compute(oshape, lambda *idx: tvm.const(1, dtype=dtype), name='ret')

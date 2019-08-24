@@ -52,6 +52,14 @@ kernel = 3
 pad = 1
 stride = 1
 
+batch_num = 256
+in_channel_num = 256
+out_channel_num = 512
+in_size_num = 14
+kernel_num = 3
+pad_num = 1
+stride_num = 1
+
 # Algorithm
 A = tvm.placeholder((in_size, in_size, in_channel, batch), name='A')
 W = tvm.placeholder((kernel, kernel, in_channel, out_channel), name='W')
@@ -235,11 +243,11 @@ s[WW].vectorize(fi)  # vectorize memory load
 
 func = tvm.build(s, [A, W, B], 'cuda')
 ctx = tvm.gpu(0)
-a_np = np.random.uniform(size=(in_size, in_size, in_channel, batch)).astype(A.dtype)
-w_np = np.random.uniform(size=(kernel, kernel, in_channel, out_channel)).astype(W.dtype)
+a_np = np.random.uniform(size=(in_size_num, in_size_num, in_channel_num, batch_num)).astype(A.dtype)
+w_np = np.random.uniform(size=(kernel_num, kernel_num, in_channel_num, out_channel_num)).astype(W.dtype)
 a = tvm.nd.array(a_np, ctx)
 w = tvm.nd.array(w_np, ctx)
-b = tvm.nd.array(np.zeros((out_size, out_size, out_channel, batch), dtype=B.dtype), ctx)
+b = tvm.nd.array(np.zeros((out_size_num, out_size_num, out_channel_num, batch_num), dtype=B.dtype), ctx)
 func(a, w, b)
 evaluator = func.time_evaluator(func.entry_name, ctx, number=1)
 print('Convolution: %f ms' % (evaluator(a, w, b).mean * 1e3))

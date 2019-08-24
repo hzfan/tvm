@@ -64,6 +64,7 @@ stride_num = 1
 A = tvm.placeholder((in_size, in_size, in_channel, batch), name='A')
 W = tvm.placeholder((kernel, kernel, in_channel, out_channel), name='W')
 out_size = (in_size - kernel + 2*pad) // stride + 1
+out_size_num = (in_size_num - kernel_num + 2 * pad_num) // stride_num + 1
 # Pad input
 Apad = tvm.compute(
     (in_size + 2*pad, in_size + 2*pad, in_channel, batch),

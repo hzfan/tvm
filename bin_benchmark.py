@@ -1,4 +1,5 @@
 import tvm
+import numpy as _np
 
 target = 'llvm'
 ctx = tvm.context(target, 0)

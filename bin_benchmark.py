@@ -20,4 +20,4 @@ c = tvm.nd.array(_np.zeros(ishape, dtype=dtype))
 
 evaluator = func.time_evaluator(func.entry_name, ctx, number=50)
 res = evaluator(a, b, c).mean
-print("time = {}".format(res))
+print("time = {} ms".format(res * 1000))

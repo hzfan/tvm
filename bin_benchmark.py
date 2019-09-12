@@ -12,6 +12,8 @@ B = tvm.placeholder(ishape, name='B', dtype=dtype)
 C = tvm.compute(ishape, lambda *idx: A[idx] + B[idx], name='C')
 s = tvm.create_schedule(C.op)
 s[C].parallel(C.op.axis[0])
+bx, tx = s[C].split(C.op.axis[-1], 4)
+s[C].vectorize(tx)
 
 func = tvm.build(s, [A, B, C], target=target, name="add")
 a = tvm.nd.array(_np.array(_np.random.uniform(-2.0, 2.0, size=ishape), dtype=dtype))

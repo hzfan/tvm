@@ -48,7 +48,8 @@ B = tvm.placeholder(ishape, name='B', dtype=dtype)
 C = tvm.compute(ishape, lambda *idx: A[idx] + B[idx], name='C')
 s = tvm.create_schedule(C.op)
 bx, tx = C.op.axis[0], C.op.axis[1]
-
+s[C].bind(bx, tvm.thread_axis("blockIdx.x"))
+s[C].bind(tx, tvm.thread_axis("threadIdx.x"))
 
 
 # test

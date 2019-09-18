@@ -42,7 +42,7 @@ def stat(name, nbytes, costs):
 target = 'cuda'
 ctx = tvm.context(target, 0)
 
-ishape = [128, 128, 128]
+ishape = [tvm.var(), tvm.var(), tvm.var()]
 dtype = 'float32'
 A = tvm.placeholder(ishape, name='A', dtype=dtype)
 B = tvm.placeholder(ishape, name='B', dtype=dtype)

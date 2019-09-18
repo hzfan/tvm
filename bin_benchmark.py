@@ -53,7 +53,7 @@ B = tvm.placeholder(ishape, name='B', dtype=dtype)
 C = tvm.compute(ishape, lambda *idx: A[idx] + B[idx], name='C')
 s = tvm.create_schedule(C.op)
 if len(C.op.axis) == 1:
-    bx, tx = s[C].split(C.op.axis[0], factor=512)
+    bx, tx = s[C].split(C.op.axis[0], factor=128)
 else:
     bx, tx = C.op.axis[0], C.op.axis[1]
 s[C].bind(bx, tvm.thread_axis("blockIdx.x"))

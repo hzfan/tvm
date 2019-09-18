@@ -57,7 +57,7 @@ s[C].bind(tx, tvm.thread_axis("threadIdx.x"))
 
 # test
 dsize = 4 
-ishape_num = [256, 256, 256]
+ishape_num = [128, 128, 128]
 func = tvm.build(s, [A, B, C], target=target, name="add")
 a_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)
 b_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)

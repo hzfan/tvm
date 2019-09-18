@@ -1,5 +1,6 @@
 import tvm
 import numpy as _np
+import time
 
 
 def run_tvm_tests(times, func_name, *args):

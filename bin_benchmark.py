@@ -3,10 +3,10 @@ import numpy as _np
 import time
 
 
-def run_tvm_tests(times, func_name, *args):
+def run_tvm_tests(times, func_name, ctx, *args):
     costs = []
     for i in range(times):
-        wrapped_args = [tvm.nd.array(arg) for arg in args]
+        wrapped_args = [tvm.nd.array(arg, ctx=ctx) for arg in args]
         cost = measure_tvm_cost(1, func_name, *wrapped_args)
         costs.append(cost)
     return costs
@@ -61,5 +61,5 @@ a_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)
 b_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)
 c_np = _np.zeros(ishape, dtype=dtype)
 
-costs = run_tvm_tests(100, func, a_np, b_np, c_np)
+costs = run_tvm_tests(100, func, ctx, a_np, b_np, c_np)
 stat("tvm", (a_np.size + b_np.size + c_np.size) * dsize, costs)

@@ -3,15 +3,6 @@ import numpy as _np
 import time
 
 
-def run_tvm_tests(times, func_name, ctx, *args):
-    costs = []
-    for i in range(times):
-        wrapped_args = [tvm.nd.array(arg, ctx=ctx) for arg in args]
-        cost = measure_tvm_cost(1, func_name, *wrapped_args)
-        costs.append(cost)
-    return costs
-
-
 def measure_tvm_cost(repeat, func_name, *args, **kwargs):
     """Measure time cost of running a function
     """
@@ -21,6 +12,15 @@ def measure_tvm_cost(repeat, func_name, *args, **kwargs):
     end = time.time()
     diff = end - start
     return diff / repeat
+
+
+def run_tvm_tests(times, func_name, ctx, *args):
+    costs = []
+    for i in range(times):
+        wrapped_args = [tvm.nd.array(arg, ctx=ctx) for arg in args]
+        cost = measure_tvm_cost(1, func_name, *wrapped_args)
+        costs.append(cost)
+    return costs
 
 
 def stabalize(x):
@@ -40,7 +40,7 @@ def stat(name, nbytes, costs):
 
 
 target = 'cuda'
-ctx = tvm.context(target, 0)
+ctx = tvm.gpu(0)
 
 ishape = [tvm.var(), tvm.var(), tvm.var()]
 dtype = 'float32'
@@ -65,8 +65,11 @@ a = tvm.nd.array(a_np, ctx=ctx)
 b = tvm.nd.array(b_np, ctx=ctx)
 c = tvm.nd.array(c_np, ctx=ctx)
 func(a, b, c)
-assert _np.allclose(c.asnumpy(), _np.ones_like(c_np))
+assert _np.allclose(c.asnumpy(), _np.add(a_np, b_np))
 
+evaluator = func.time_evaluator(func.entry_name, ctx, number=100)
+print('built-in:')
+print("mean(s):         {}".format(evaluator(a, b, c).mean))
 
 costs = run_tvm_tests(100, func, ctx, a_np, b_np, c_np)
 stat("tvm", (a_np.size + b_np.size + c_np.size) * dsize, costs)

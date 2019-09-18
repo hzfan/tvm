@@ -58,6 +58,7 @@ bx, tx = s[C].split(C.op.axis[0], factor=256)
 s[C].bind(bx, tvm.thread_axis("blockIdx.x"))
 s[C].bind(tx, tvm.thread_axis("threadIdx.x"))
 
+print(tvm.lower(s, [A, B, C], target=target, simple_mode=True))
 
 # test
 dsize = 4 

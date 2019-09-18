@@ -65,7 +65,7 @@ a = tvm.nd.array(a_np, ctx=ctx)
 b = tvm.nd.array(b_np, ctx=ctx)
 c = tvm.nd.array(c_np, ctx=ctx)
 func(a, b, c)
-assert _np.allclose(c.asnumpy(), _np.add(a_np, b_np))
+assert _np.allclose(c.asnumpy(), _np.ones_like(c_np))
 
 
 costs = run_tvm_tests(100, func, ctx, a_np, b_np, c_np)

@@ -3,12 +3,14 @@ import numpy as _np
 import time
 
 
-def measure_tvm_cost(repeat, func_name, *args, **kwargs):
+def measure_tvm_cost(repeat, func_name, ctx, *args, **kwargs):
     """Measure time cost of running a function
     """
+    ctx.sync()
     start = time.time()
     for _ in range(repeat):
         func_name(*args, **kwargs)
+    ctx.sync()
     end = time.time()
     diff = end - start
     return diff / repeat
@@ -18,7 +20,7 @@ def run_tvm_tests(times, func_name, ctx, *args):
     costs = []
     for i in range(times):
         wrapped_args = [tvm.nd.array(arg, ctx=ctx) for arg in args]
-        cost = measure_tvm_cost(1, func_name, *wrapped_args)
+        cost = measure_tvm_cost(1, func_name, ctx, *wrapped_args)
         costs.append(cost)
     return costs
 

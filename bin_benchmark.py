@@ -54,12 +54,12 @@ s[C].bind(tx, tvm.thread_axis("threadIdx.x"))
 
 
 # test
-dsize = 4
-ishape_num = [128, 128, 128]
+dsize = 4 
+ishape_num = [256, 256, 256]
 func = tvm.build(s, [A, B, C], target=target, name="add")
 a_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)
 b_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)
-c_np = _np.zeros(ishape, dtype=dtype)
+c_np = _np.zeros(ishape_num, dtype=dtype)
 
 costs = run_tvm_tests(100, func, ctx, a_np, b_np, c_np)
 stat("tvm", (a_np.size + b_np.size + c_np.size) * dsize, costs)

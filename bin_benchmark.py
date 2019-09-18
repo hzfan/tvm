@@ -44,20 +44,25 @@ def stat(name, nbytes, costs):
 target = 'cuda'
 ctx = tvm.gpu(0)
 
-ishape = [tvm.var(), tvm.var(), tvm.var()]
+# ishape = [tvm.var(), tvm.var(), tvm.var()]
+ishape = [128 * 64 * 1024]
 dtype = 'float32'
 A = tvm.placeholder(ishape, name='A', dtype=dtype)
 B = tvm.placeholder(ishape, name='B', dtype=dtype)
 C = tvm.compute(ishape, lambda *idx: A[idx] + B[idx], name='C')
 s = tvm.create_schedule(C.op)
-bx, tx = C.op.axis[0], C.op.axis[1]
+if len(C.op.axis) == 1:
+    bx, tx = s[C].split(C.op.axis[0], factor=256)
+else:
+    bx, tx = C.op.axis[0], C.op.axis[1]
 s[C].bind(bx, tvm.thread_axis("blockIdx.x"))
 s[C].bind(tx, tvm.thread_axis("threadIdx.x"))
 
 
 # test
 dsize = 4 
-ishape_num = [128, 64, 1024]
+# ishape_num = [128, 64, 1024]
+ishape_num = [128 * 64 * 1024]
 func = tvm.build(s, [A, B, C], target=target, name="add")
 a_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)
 b_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)

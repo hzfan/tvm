@@ -55,8 +55,10 @@ s = tvm.create_schedule(C.op)
 axes = [axis for axis in C.op.axis]
 s[C].fuse(*axes)
 bx, tx = s[C].split(C.op.axis[0], factor=256)
+tx, vx = s[C].split(tx, factor=16)
 s[C].bind(bx, tvm.thread_axis("blockIdx.x"))
 s[C].bind(tx, tvm.thread_axis("threadIdx.x"))
+s[C].vectorize(vx)
 
 print(tvm.lower(s, [A, B, C], simple_mode=True))
 

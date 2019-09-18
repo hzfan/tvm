@@ -45,7 +45,7 @@ target = 'cuda'
 ctx = tvm.gpu(0)
 
 # ishape = [tvm.var(), tvm.var(), tvm.var()]
-ishape = [32768, 256]
+ishape = [128, 256, 256]
 # ishape = [128 * 64 * 1024]
 dtype = 'float32'
 A = tvm.placeholder(ishape, name='A', dtype=dtype)
@@ -63,7 +63,7 @@ s[C].bind(tx, tvm.thread_axis("threadIdx.x"))
 # test
 dsize = 4 
 # ishape_num = [128, 64, 1024]
-ishape_num = [32768, 256]
+ishape_num = [128, 256, 256]
 # ishape_num = [128 * 64 * 1024]
 func = tvm.build(s, [A, B, C], target=target, name="add")
 a_np = _np.array(_np.random.uniform(-2.0, 2.0, size=ishape_num), dtype=dtype)

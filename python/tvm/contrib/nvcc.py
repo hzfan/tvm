@@ -76,6 +76,8 @@ def compile_cuda(code,
     cmd += ["--%s" % target, "-O3"]
     cmd += arch.split(' ')
 
+    print(cmd)
+
     if options:
         if isinstance(options, str):
             cmd += [options]

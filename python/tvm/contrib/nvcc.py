@@ -67,14 +67,14 @@ def compile_cuda(code,
     if arch is None:
         if nd.gpu(0).exist:
             # auto detect the compute arch argument
-            arch = "sm_" + "".join(nd.gpu(0).compute_version.split('.'))
+            arch = "-arch " + "sm_" + "".join(nd.gpu(0).compute_version.split('.'))
         else:
             raise ValueError("arch(sm_xy) is not passed, and we cannot detect it from env")
 
     file_target = path_target if path_target else temp_target
     cmd = ["nvcc"]
     cmd += ["--%s" % target, "-O3"]
-    cmd += ["-arch", arch]
+    cmd += arch.split(' ')
 
     if options:
         if isinstance(options, str):

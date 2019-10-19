@@ -73,7 +73,7 @@ def compile_cuda(code,
 
     file_target = path_target if path_target else temp_target
     cmd = ["nvcc"]
-    cmd += ["--%s" % target, "-O3"]
+    cmd += ["--%s" % target, "-O3", "-Xcompiler", "-O3"]
     cmd += ["-arch", arch]
 
     if options:

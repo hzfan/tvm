@@ -55,6 +55,8 @@ def compile_cuda(code,
     cubin : bytearray
         The bytearray of the cubin
     """
+    print("code: {}".format(code))
+    print("length of code: {}".format(len(code)))
     temp = util.tempdir()
     if target not in ["cubin", "ptx", "fatbin"]:
         raise ValueError("target must be in cubin, ptx, fatbin")

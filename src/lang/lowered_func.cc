@@ -28,7 +28,8 @@ namespace tvm {
 TVM_STATIC_IR_FUNCTOR(IRPrinter, vtable)
 .set_dispatch<LoweredFuncNode>([](const ObjectRef& node, IRPrinter *p) {
     auto* op = static_cast<const LoweredFuncNode*>(node.get());
-    p->stream << "LoweredFunc(" << op->name << ", " << op << ")";
+    p->stream << "LoweredFunc(" << op->name << ", " << op << ")" << std::endl;
+    p->stream << op->body << std::endl;
 });
 
 TVM_REGISTER_NODE_TYPE(LoweredFuncNode);

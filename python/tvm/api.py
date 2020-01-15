@@ -288,7 +288,8 @@ def compute(shape, fcompute, name="compute", tag="", attrs=None):
     if out_ndim != len(arg_names):
         raise ValueError("fcompute do not match dimension, ndim=%d" % ndim)
 
-    dim_var = [_IterVar((0, s), x, 0) for x, s in zip(arg_names, shape[:out_ndim])]
+    dim_var = [_IterVar((0, s), x, 0, dtype=str(s.dtype))
+               for x, s in zip(arg_names, shape[:out_ndim])]
     body = fcompute(*[v.var for v in dim_var])
 
     if isinstance(body, _tensor.TensorIntrinCall):
@@ -660,7 +661,7 @@ def bijective_layout(src_layout, dst_layout):
         dst_layout = layout(dst_layout)
     return _api_internal._BijectiveLayout(src_layout, dst_layout)
 
-def _IterVar(dom, name, iter_type, thread_tag=''):
+def _IterVar(dom, name, iter_type, thread_tag='', dtype=int32):
     """Internal function to create IterVar
 
     Parameters
@@ -691,7 +692,7 @@ def _IterVar(dom, name, iter_type, thread_tag=''):
         if not isinstance(dom, _container.Range):
             raise TypeError("dom need to be Range")
     name = name if name else 'iter'
-    v = var(name)
+    v = var(name, dtype=dtype)
     return _api_internal._IterVar(dom, v, iter_type, thread_tag)
 
 

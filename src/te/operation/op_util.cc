@@ -110,7 +110,7 @@ MakeLoopNest(const Stage& stage,
         value_map[iv] = dom->min;
       } else if (is_zero(dom->min)) {
         nest[i + 1].emplace_back(
-            ForNode::make(var, 0, dom->extent,
+            ForNode::make(var, IntImm(dom->extent.dtype(), 0), dom->extent,
                       for_type, DeviceAPI::None, no_op));
         value_map[iv] = var;
       } else {

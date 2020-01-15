@@ -1095,8 +1095,13 @@ void CodeGenLLVM::VisitStmt_(const ForNode* op) {
   } else {
     CHECK(op->for_type == ForType::Serial);
   }
+  CHECK(op->loop_var->dtype == DataType::Int(32) || 
+        op->loop_var->dtype == DataType::Int(64))
+    << "Loop vars must be of type int32 or int64";
   CreateSerialFor(MakeValue(op->min), MakeValue(op->extent),
-                  ConstInt32(1), op->loop_var, op->body);
+                  (op->loop_var->dtype == DataType::Int(32) ?
+                  ConstInt32(1) : ConstInt64(1)),
+                  op->loop_var, op->body);
 }
 
 

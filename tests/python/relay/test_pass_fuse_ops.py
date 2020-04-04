@@ -621,6 +621,80 @@ def test_fuse_max():
     after = run_opt_pass(expected(), transform.InferType())
     assert tvm.ir.structural_equal(zz, after)
 
+
+def test_fuse_strided_slice():
+    """Test fusion case involving concat and strided_slice"""
+
+    def before():
+        shape = (tvm.tir.const(10, "int64"),
+                 tvm.tir.const(1, "int64"))
+        x = relay.var("x", shape=shape)
+        concat = relay.concatenate([x,x], axis=-1)
+        out = relay.strided_slice(concat, begin=[np.int64(0)], end=[np.int64(3)])
+        t = relay.Function(relay.analysis.free_vars(out), out)
+        return relay.Function(relay.analysis.free_vars(out), out)
+
+    def expected():
+        shape = (tvm.tir.const(10, "int64"),
+                 tvm.tir.const(1, "int64"))
+        x = relay.var("x", shape=shape)
+        p0 = relay.var("p0", shape=shape)
+        concat = relay.concatenate([p0,p0], axis=-1)
+        out = relay.strided_slice(concat, begin=[np.int64(0)], end=[np.int64(3)])
+
+        f0 = relay.Function([p0], out)
+        f0 = f0.with_attr("Primitive", tvm.tir.IntImm("int32", 1))
+
+        y = relay.Call(f0, [x])
+        return relay.Function([x], y)
+    orig = before()
+    fuse0(tvm.IRModule.from_expr(orig))
+    t = tvm.IRModule.from_expr(orig)
+    m = fuse2(tvm.IRModule.from_expr(orig))
+    attention = m["main"].body.op.params
+    
+    relay.build(m, 'llvm')
+    after = run_opt_pass(expected(), transform.InferType())
+    assert tvm.ir.structural_equal(m["main"], after)
+
+
+def test_fuse_take():
+    """Test fusion case involving concat and take"""
+
+    def before():
+        shape = (tvm.tir.const(10, "int64"),
+                 tvm.tir.const(1, "int64"))
+        x = relay.var("x", shape=shape)
+        concat = relay.concatenate([x,x], axis=-1)
+        out = relay.op.take(concat, indices=relay.const([0], dtype="int64"))
+        return relay.Function(relay.analysis.free_vars(out), out)
+
+    def expected():
+        shape1 = (tvm.tir.const(10, "int64"),
+                  tvm.tir.const(1, "int64"))
+        shape2 = (tvm.tir.const(1, "int64"),)
+        x = relay.var("x", shape=shape1)
+        p0 = relay.var("p0", shape=shape1)
+        p1 = relay.var("p1", shape=shape2,
+                             dtype="int64")
+        c = relay.const([0], dtype="int64")
+        concat = relay.concatenate([p0,p0], axis=-1)
+        out = relay.op.take(concat, indices=p1)
+
+        f0 = relay.Function([p0, p1], out)
+        f0 = f0.with_attr("Primitive", tvm.tir.IntImm("int32", 1))
+
+        y = relay.Call(f0, [x, c])
+        return relay.Function([x], y)
+
+    orig = before()
+    fuse0(tvm.IRModule.from_expr(orig))
+    m = fuse2(tvm.IRModule.from_expr(orig))
+    relay.build(m, 'llvm')
+    after = run_opt_pass(expected(), transform.InferType())
+    assert tvm.ir.structural_equal(m["main"], after)
+
+
 if __name__ == "__main__":
     test_fuse_simple()
     test_conv2d_fuse()

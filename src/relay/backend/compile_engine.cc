@@ -97,9 +97,10 @@ Array<IndexExpr> GetShape(const Array<IndexExpr>& shape) {
   for (IndexExpr val : shape) {
     const int64_t* pval = tir::as_const_int(val);
     if (pval != nullptr) {
-      CHECK_LE(pval[0], std::numeric_limits<int32_t>::max());
-      CHECK_GE(pval[0], std::numeric_limits<int32_t>::min());
-      res.push_back(IntImm(DataType::Int(32), *pval));
+      // CHECK_LE(pval[0], std::numeric_limits<int32_t>::max());
+      // CHECK_GE(pval[0], std::numeric_limits<int32_t>::min());
+      // res.push_back(IntImm(DataType::Int(32), *pval));
+      res.push_back(val);
     } else if (val->IsInstance<tir::AnyNode>()) {
       res.push_back(val.as<tir::AnyNode>()->ToVar());
     } else {

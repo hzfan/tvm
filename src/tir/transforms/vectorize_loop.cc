@@ -99,9 +99,10 @@ class Vectorizer : public StmtMutator, public ExprFunctor<PrimExpr(const PrimExp
  public:
   using ExprFunctor::VisitExpr;
   using StmtMutator::operator();
-
-  Vectorizer(Var var, int var_lanes) : var_(var), var_lanes_(var_lanes) {
-    ramp_ = Ramp(0, 1, var_lanes);
+  Vectorizer(Var var, IntImm var_lanes) : var_(var), var_lanes_(var_lanes) {
+    ramp_ = Ramp(IntImm(var_lanes.dtype(), 0),
+                 IntImm(var_lanes.dtype(), 1),
+                 var_lanes->value);
   }
 
   Stmt VisitStmt(const Stmt& stmt) final {
@@ -426,7 +427,9 @@ class Vectorizer : public StmtMutator, public ExprFunctor<PrimExpr(const PrimExp
     // place the vector lanes in least significant dimension.
     extents.push_back(var_lanes_);
     // rewrite access to buffer internally.
-    Stmt body = VecAllocAccess(op->buffer_var.get(), var_, var_lanes_)(op->body);
+    Stmt body = VecAllocAccess(op->buffer_var.get(),
+                               var_,
+                               static_cast<int>(var_lanes_->value))(op->body);
     body = this->VisitStmt(body);
     return Allocate(op->buffer_var, op->dtype, extents, condition, body);
   }
@@ -436,7 +439,8 @@ class Vectorizer : public StmtMutator, public ExprFunctor<PrimExpr(const PrimExp
     Var idx(var_->name_hint + ".s", var_->dtype);
     Map<Var, PrimExpr> values{{var_, idx}};
     stmt = Substitute(stmt, values);
-    return For(idx, 0, var_lanes_, ForType::Serial, DeviceAPI::None, stmt);
+    return For(idx, make_zero(var_lanes_.dtype()),
+               var_lanes_, ForType::Serial, DeviceAPI::None, stmt);
   }
   // ProducerStore
   Stmt VisitStmt_(const ProducerStoreNode* op) final {
@@ -452,7 +456,7 @@ class Vectorizer : public StmtMutator, public ExprFunctor<PrimExpr(const PrimExp
   // variable to be replaced
   Var var_;
   // the lanes.
-  int var_lanes_;
+  IntImm var_lanes_;
   // ramp representing the var.
   PrimExpr ramp_;
   // flag to mark requirment of scalarization.
@@ -531,7 +535,7 @@ class LoopVectorizer : public StmtMutator {
       if (!extent_as_int || extent_as_int->value < 1) {
         LOG(FATAL) << "Failed to vectorize loop with extent " << op->extent;
       }
-      return Vectorizer(op->loop_var, static_cast<int>(extent_as_int->value))(op->body);
+      return Vectorizer(op->loop_var, GetRef<IntImm>(extent_as_int))(op->body);
     } else {
       return StmtMutator::VisitStmt_(op);
     }

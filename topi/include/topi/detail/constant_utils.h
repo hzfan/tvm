@@ -114,8 +114,11 @@ inline bool EqualCheck(PrimExpr lhs, PrimExpr rhs) {
   tvm::tir::ExprDeepEqual expr_equal;
   bool result = expr_equal(lhs, rhs);
   if (!result) {
-    PrimExpr zero(0);
-    result = expr_equal(tvm::arith::Analyzer().Simplify(lhs - rhs), zero);
+    PrimExpr ret = tvm::arith::Analyzer().Simplify(lhs - rhs);
+    if (const IntImmNode* v = ret.as<IntImmNode>()) {
+      return v->value == 0;
+    }
+    return false;
   }
   return result;
 }

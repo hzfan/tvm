@@ -46,7 +46,8 @@ using namespace tir;
 TVM_STATIC_IR_FUNCTOR(ReprPrinter, vtable)
     .set_dispatch<ComputeOpNode>([](const ObjectRef& node, ReprPrinter* p) {
       auto* op = static_cast<const ComputeOpNode*>(node.get());
-      p->stream << "compute(" << op->name << ", " << op << ")";
+      p->stream << "compute(" << op->name << ", " << op->root_iter_vars() 
+                << ", " << op << ", " << op->body << ")";
     });
 
 TVM_REGISTER_NODE_TYPE(ComputeOpNode);

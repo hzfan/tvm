@@ -19,7 +19,6 @@
 from __future__ import absolute_import
 
 import logging
-import numpy as np
 import tvm
 from tvm import te
 from tvm.runtime import Object
@@ -81,8 +80,7 @@ def get_shape(shape):
     for dim in shape:
         if isinstance(dim, tvm.tir.IntImm):
             val = int(dim)
-            assert val <= np.iinfo(np.int32).max
-            ret.append(tvm.tir.IntImm("int32", val))
+            ret.append(val)
         elif isinstance(dim, tvm.tir.Any):
             ret.append(te.var("any_dim", "int32"))
         else:

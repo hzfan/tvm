@@ -638,6 +638,13 @@ inline Tensor compute(Array<PrimExpr> shape, std::function<PrimExpr(Var, Var, Va
 inline const OperationNode* Operation::operator->() const {
   return static_cast<const OperationNode*>(get());
 }
+
+/*!
+ * \brief Converts IntImm in shape to to DataType::Int(64) if necessary
+ * \param shape The shape to be converted
+ */
+TVM_DLL Array<PrimExpr> GetShape(Array<PrimExpr> shape);
+
 }  // namespace te
 }  // namespace tvm
 #endif  // TVM_TE_OPERATION_H_

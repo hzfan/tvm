@@ -29,6 +29,7 @@
 #include <unordered_set>
 
 #include "graph.h"
+#include "promote_datatype.h"
 
 namespace tvm {
 namespace te {
@@ -635,13 +636,17 @@ Schedule::Schedule(Array<Operation> ops) {
   for (Operation x : ops) {
     output_set.insert(x);
   }
+  Map<Operation, Operation> omap = PromoteDataType(ops);
   for (Operation op : post_order) {
-    Stage stage(op);
+    CHECK(omap.count(op) != 0);
+    Operation new_op = omap[op];
+    Stage stage(omap[op]);
+    stage->origin_op = new_op;
     stage->is_output = output_set.count(op) != 0;
     n->stages.push_back(stage);
     n->stage_map.Set(op, stage);
     // mark scan updates.
-    if (const ScanOpNode* scan = op.as<ScanOpNode>()) {
+    if (const ScanOpNode* scan = new_op.as<ScanOpNode>()) {
       Array<Tensor> inputs;
       for (Tensor t : scan->state_placeholder) {
         inputs.push_back(t);
@@ -750,7 +755,9 @@ TVM_STATIC_IR_FUNCTOR(ReprPrinter, vtable)
     .set_dispatch<StageNode>([](const ObjectRef& node, ReprPrinter* p) {
       auto* op = static_cast<const StageNode*>(node.get());
       if (op->op.defined()) {
-        p->stream << "stage(" << op->origin_op->name << ", " << op << ")";
+        p->stream << "stage(" << op->origin_op->name << ", "
+                  << op->all_iter_vars << ", " << op->leaf_iter_vars << ", "
+                  << op->op << ")";
       } else {
         p->stream << "group-stage(" << op << ")";
       }
@@ -797,7 +804,11 @@ TVM_STATIC_IR_FUNCTOR(ReprPrinter, vtable)
     })
     .set_dispatch<ScheduleNode>([](const ObjectRef& node, ReprPrinter* p) {
       auto* op = static_cast<const ScheduleNode*>(node.get());
-      p->stream << "schedule(" << op << ")";
+      p->stream << "schedule(\n";
+      for (size_t i = 0; i < op->stages.size(); ++i) {
+        p->stream << op->stages[i] << "\n";
+      }
+      p->stream << ")\n";
     })
     .set_dispatch<SpecializedConditionNode>([](const ObjectRef& node, ReprPrinter* p) {
       auto* op = static_cast<const SpecializedConditionNode*>(node.get());

@@ -23,6 +23,7 @@
  */
 #include <tvm/runtime/registry.h>
 #include <tvm/te/operation.h>
+#include "op_util.h"
 
 namespace tvm {
 namespace te {
@@ -31,7 +32,8 @@ namespace te {
 TVM_STATIC_IR_FUNCTOR(ReprPrinter, vtable)
     .set_dispatch<PlaceholderOpNode>([](const ObjectRef& node, ReprPrinter* p) {
       auto* op = static_cast<const PlaceholderOpNode*>(node.get());
-      p->stream << "placeholder(" << op->name << ", " << op << ")";
+      p->stream << "placeholder(" << op->name << ", " << op << ", "
+                << op->shape << ", " << op->dtype << ")";
     });
 
 TVM_REGISTER_NODE_TYPE(PlaceholderOpNode);

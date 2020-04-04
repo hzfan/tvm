@@ -23,11 +23,14 @@
  */
 #include "op_util.h"
 
+#include <tvm/runtime/registry.h>
 #include <tvm/te/operation.h>
 #include <tvm/tir/expr.h>
 #include <tvm/tir/stmt_functor.h>
 
+#include <algorithm>
 #include <string>
+#include <limits>
 
 #include "../../runtime/thread_storage_scope.h"
 #include "../schedule/message_passing.h"
@@ -37,6 +40,24 @@ namespace te {
 
 using namespace arith;
 using namespace tir;
+
+Range RangeMatchTypes(Var v, Range dom) {
+  PrimExpr a = dom->min;
+  PrimExpr b = dom->extent;
+  DataType atype = a.dtype();
+  DataType btype = b.dtype();
+  DataType vtype = v.dtype();
+  // Only do int type promotion
+  CHECK(atype.is_scalar());
+  CHECK(btype.is_scalar());
+  CHECK(vtype.is_scalar());
+  CHECK(atype.code() == btype.code() && atype.code() == vtype.code());
+  CHECK(vtype.bits() >= atype.bits() && vtype.bits() >= btype.bits());
+  DataType dtype = atype.with_bits(vtype.bits());
+  a = cast(dtype, a);
+  b = cast(dtype, b);
+  return Range::make_by_min_extent(a, b);
+}
 
 std::vector<std::vector<Stmt> > MakeLoopNest(const Stage& stage,
                                              const std::unordered_map<IterVar, Range>& dom_map,
@@ -69,6 +90,9 @@ std::vector<std::vector<Stmt> > MakeLoopNest(const Stage& stage,
 
     // initialize the offset and loop_level
     Var var = bind_iv->var;
+
+    // Match the type of dom
+    dom = RangeMatchTypes(var, dom);
 
     // Mark the iter var in the IR, to remember the point
     if (bind_iv->thread_tag.length() == 0) {
@@ -271,6 +295,32 @@ tir::ForType IterVarTypeToForType(IterVarType iter_type) {
       return ForType::Serial;
   }
 }
+
+Array<PrimExpr> GetShape(Array<PrimExpr> shape) {
+  bool is_const = true;
+  int64_t size = 1;
+  DataType dtype;
+  for (auto s : shape) {
+    if (const IntImmNode* i = s.as<IntImmNode>()) {
+      size *= i->value;
+    } else {
+      is_const = false;
+      dtype = s.dtype();
+    }
+  }
+  Array<PrimExpr> ret;
+  if (is_const) {
+    for (auto s : shape) {
+      int64_t value = Downcast<IntImm>(s)->value;
+      ret.push_back(IntImm(DataType::Int(64), value));
+    }
+  } else {
+    ret = shape;
+  }
+  return ret;
+}
+
+TVM_REGISTER_GLOBAL("te.GetShape").set_body_typed(GetShape);
 
 }  // namespace te
 }  // namespace tvm

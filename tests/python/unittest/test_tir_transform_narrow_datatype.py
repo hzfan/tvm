@@ -16,6 +16,7 @@
 # under the License.
 import tvm
 from tvm import te
+from tvm import relay
 from tvm.tir import const
 
 
@@ -38,6 +39,7 @@ def lower_sch(sch, args, target_bits):
             arg_list.append(buf)
         else:
             raise ValueError("args must be Tensor, Buffer or Var")
+    sch = sch.normalize()
     bounds = te.schedule.InferBound(sch)
     stmt = te.schedule.ScheduleOps(sch, bounds)
 
@@ -189,9 +191,90 @@ def test_slice():
           target_bits=32, target_dtype='int64')
 
 
+def test_basic_from_relay():
+    engine = relay.backend.compile_engine.get()
+    def check(shapex, shapey, target_bits, target_dtype):
+        x = relay.var('x', shape=shapex)
+        y = relay.var('y', shape=shapey)
+        z = relay.add(x, y)
+        func = relay.Function([x, y], z)
+        mod = tvm.IRModule.from_expr(func)
+        func = mod["main"]
+        z = engine.lower(func, "llvm")
+        stmt = lower_sch(z.schedule, tuple(z.inputs) + tuple(z.outputs), 32)
+        # outer loop
+        assert stmt.loop_var.dtype == target_dtype
+        # inner loop
+        if len(shapex) > 1 or len(shapey) > 1:
+            assert stmt.body.loop_var.dtype == target_dtype
+
+    check((65536, 32769), (1, 32769), 
+          target_bits=32, target_dtype="int64")
+    check((65536, 32768), (1, 32768),
+          target_bits=32, target_dtype="int32")
+    check((2**31,), (2**31,),
+          target_bits=32, target_dtype="int32")
+    check((2**31 + 1,), (2**31 + 1,),
+          target_bits=32, target_dtype="int64")
+
+
+def test_te_extern():
+    def check(shape, target_bits, target_dtype):
+        A = te.placeholder(shape, name='A')
+        B = te.placeholder(shape, name='B')
+        def add(A, B, C):
+            m, n = A.shape
+            ib = tvm.tir.ir_builder.create()
+            Aptr = ib.buffer_ptr(A)
+            Bptr = ib.buffer_ptr(B)
+            Cptr = ib.buffer_ptr(C)
+            with ib.for_range(0, m, name="i") as i:
+                with ib.for_range(0, n, name="j") as j:
+                    Cptr[i * n + j] = Aptr[i * n + j] + Bptr[i * n + j]
+            body = ib.get()
+            return body
+        C = te.extern(shape, [A, B], lambda ins, outs: add(ins[0], ins[1], outs[0]),
+                      name="add")
+        s = te.create_schedule(C.op)
+        stmt = lower_sch(s, (A, B, C), 32)
+        t = stmt
+        assert stmt.body.loop_var.dtype == target_dtype
+        assert stmt.body.body.loop_var.dtype == target_dtype
+
+    check((2**15, 2**16),
+          target_bits=32, target_dtype="int32")
+    check((2**15, 2**16 + 1),
+          target_bits=32, target_dtype="int64")
+
+
+def test_te_scan():
+    def check(shape, target_bits, init_dtype, upd_dtype):
+        m, n = shape
+        x = te.placeholder(shape, name='x')
+        s = te.placeholder(shape, name='s')
+        res = tvm.te.scan(te.compute((1, n), lambda _, i: x[0, i]),
+                          te.compute((m, n), lambda t, i: s[t - 1, i] + x[t, i]),
+                          s)
+        s = te.create_schedule(res.op)
+        stmt = lower_sch(s, (x, res), 32)
+        # check init
+        assert stmt[0].loop_var.dtype == init_dtype
+        #check update
+        assert stmt[1].loop_var.dtype == upd_dtype
+        assert stmt[1].body.loop_var.dtype == upd_dtype
+
+    check((2**15, 2**16),
+          target_bits=32, init_dtype="int32", upd_dtype="int32")
+    check((2**15, 2**16 + 1),
+          target_bits=32, init_dtype="int32", upd_dtype="int64")
+
+
 if __name__ == "__main__":
     test_basic()
     test_thread_axis()
     test_multilanes()
     test_reduce()
     test_slice()
+    test_basic_from_relay()
+    test_te_extern()
+    test_te_scan()

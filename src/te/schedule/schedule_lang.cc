@@ -640,8 +640,8 @@ Schedule::Schedule(Array<Operation> ops) {
   for (Operation op : post_order) {
     CHECK(omap.count(op) != 0);
     Operation new_op = omap[op];
-    Stage stage(omap[op]);
-    stage->origin_op = new_op;
+    Stage stage(new_op);
+    stage->origin_op = op;
     stage->is_output = output_set.count(op) != 0;
     n->stages.push_back(stage);
     n->stage_map.Set(op, stage);

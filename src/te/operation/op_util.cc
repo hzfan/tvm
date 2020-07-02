@@ -56,7 +56,7 @@ Range RangeMatchTypes(Var v, Range dom) {
   DataType dtype = atype.with_bits(vtype.bits());
   a = cast(dtype, a);
   b = cast(dtype, b);
-  return Range::make_by_min_extent(a, b);
+  return Range(a, b);
 }
 
 std::vector<std::vector<Stmt> > MakeLoopNest(const Stage& stage,

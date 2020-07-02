@@ -73,8 +73,7 @@ DataType GetPromotedDataType(Array<IterVar> vars) {
 
 IterVar cast(DataType dtype, IterVar iv) {
   Var v = Var(iv->var->name_hint, dtype);
-  Range dom = Range::make_by_min_extent(cast(dtype, iv->dom->min),
-                                        cast(dtype, iv->dom->extent));
+  Range dom = Range(cast(dtype, iv->dom->min), cast(dtype, iv->dom->extent));
   return IterVar(dom, v, iv->iter_type, iv->thread_tag);
 }
 

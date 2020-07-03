@@ -699,9 +699,14 @@ void PromoteIterVarType(ScheduleNode* sch) {
   // Maps from original variables to variables after promotion
   Map<Var, IterVar> vmap;
   // Update ScheduleNode::stages
+
   for (size_t i = 0; i < sch->stages.size(); ++i) {
     Stage s = sch->stages[i];
     const Operation& op = s->op;
+    // TODO(@hzfan): support other operations
+    if (!op.as<ComputeOpNode>()) {
+      continue;
+    }
     // Get target data type
     Array<IterVar> ivs = op->root_iter_vars();
     DataType dtype = GetTargetDataType(ivs);

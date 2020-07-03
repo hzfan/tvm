@@ -69,6 +69,15 @@ IterVar MakeIterVar(DataType dtype, IterVar iv) {
   return IterVar(dom, v, iv->iter_type, iv->thread_tag);
 }
 
+IterVar UpdateIterVar(Map<Var, IterVar>* vmap, DataType dtype, IterVar iv) {
+    if (vmap->find(iv->var) != vmap->end()) {
+      return vmap->at(iv->var);
+    }
+    IterVar new_iv = MakeIterVar(dtype, iv);
+    vmap->Set(iv->var, new_iv);
+    return new_iv;
+}
+
 #define DEFINE_BIOP_EXPR_MUTATE_WITH_TYPE_MATCH(OP, FUNC) \
   PrimExpr DataTypeRewriter::VisitExpr_(const OP* op) {   \
     PrimExpr a = this->VisitExpr(op->a);                  \

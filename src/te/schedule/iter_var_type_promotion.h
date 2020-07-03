@@ -60,14 +60,7 @@ DataType GetTargetDataType(Array<IterVar> vars);
 
 IterVar MakeIterVar(DataType dtype, IterVar iv);
 
-IterVar UpdateIterVar(Map<Var, IterVar>* vmap, DataType dtype, IterVar iv) {
-    if (vmap->find(iv->var) != vmap->end()) {
-      return vmap->at(iv->var);
-    }
-    IterVar new_iv = MakeIterVar(dtype, iv);
-    vmap->Set(iv->var, new_iv);
-    return new_iv;
-}
+IterVar UpdateIterVar(Map<Var, IterVar>* vmap, DataType dtype, IterVar iv);
 
 class DataTypeRewriter : public ExprMutator {
  public:

@@ -30,6 +30,7 @@
 #include "../../tir/transforms/ir_util.h"
 #include "message_passing.h"
 #include "operation_inline.h"
+#include "iter_var_type_promotion.h"
 
 namespace tvm {
 namespace te {
@@ -688,9 +689,86 @@ void LegalizeInvalidAttach(ScheduleNode* sch) {
   }
 }
 
+void PromoteIterVarType(ScheduleNode* sch) {
+  sch->InvalidateCache();
+
+  // Maps from original tensors to tensors after promotion
+  std::unordered_map<Tensor, Tensor> tmap;
+  // Maps from original variables to variables after promotion
+  Map<Var, IterVar> vmap;
+  for (size_t i = 0; i < sch->stages.size(); ++i) {
+    Stage s = sch->stages[i];
+    const Operation& op = s->op;
+    // Get target data type
+    Array<IterVar> ivs = op->root_iter_vars();
+    DataType dtype = GetTargetDataType(ivs);
+    // Helper functions
+    auto axis_func = [&vmap, dtype](const IterVar& iv) {
+      return UpdateIterVar(&vmap, dtype, iv);
+    };
+    auto expr_func = [&vmap, dtype](const PrimExpr& e) {
+      DataTypeRewriter rewriter(&vmap, dtype);
+      return rewriter(e);
+    };
+    auto rel_func = [&vmap, dtype](const IterVarRelation& rel) {
+      IterVarRelationRewriter rewriter(&vmap, dtype);
+      return rewriter(rel);
+    };
+    // Update Stage::op
+    Operation new_op;
+    const auto* compute = op.as<ComputeOpNode>();
+    if (compute) {
+      Array<IterVar> new_ivs
+        = UpdateArray(compute->axis, axis_func);
+      Array<PrimExpr> new_body
+        = UpdateArray(compute->body, expr_func);
+      new_op = ComputeOp(compute->name, compute->tag, compute->attrs, new_ivs, new_body);
+    } else {
+      new_op = op;
+    }
+    new_op = new_op->ReplaceInputs(new_op, tmap);
+    for (int i = 0; i < op->num_outputs(); ++i) {
+      tmap[op.output(i)] = new_op.output(i);
+    }
+    s->op = new_op;
+    // Update Stage::all_iter_vars
+    Array<IterVar> new_all_iter_vars = 
+      UpdateArray(s->all_iter_vars, axis_func);
+    s->all_iter_vars = new_all_iter_vars;
+    // Update Stage::leaf_iter_vars
+    Array<IterVar> new_leaf_iter_vars =
+      UpdateArray(s->leaf_iter_vars, axis_func);
+    s->leaf_iter_vars = new_leaf_iter_vars;
+    // Update Stage::store_predicate
+    PrimExpr new_store_predicate = 
+      expr_func(s->store_predicate);
+    s->store_predicate = new_store_predicate;
+    // Update relations
+    Array<IterVarRelation> new_relations =
+      UpdateArray(s->relations, rel_func);
+    s->relations = new_relations;
+    // Update iter_var_attrs
+    Map<IterVar, IterVarAttr> new_iter_var_attrs;
+    for (const auto& it : s->iter_var_attrs) {
+      IterVar key = axis_func(it.first);
+      new_iter_var_attrs.Set(key, it.second);
+    }
+    s->iter_var_attrs = new_iter_var_attrs;
+  }
+  // A second pass to update attach_ivar
+  for (size_t i = 0; i < sch->stages.size(); ++i) {
+    Stage s = sch->stages[i];
+    // Update attach_ivar
+    CHECK(vmap.find(s->attach_ivar->var) != vmap.end());
+    IterVar new_attach_ivar = vmap[s->attach_ivar->var];
+    s->attach_ivar = new_attach_ivar;
+  }
+}
+
 Schedule Schedule::normalize() {
   Schedule sn = copy();
   InjectInline(sn.operator->());
+  PromoteIterVarType(sn.operator->());
   RebaseNonZeroMinLoop(sn.operator->());
   LegalizeInvalidAttach(sn.operator->());
   return sn;

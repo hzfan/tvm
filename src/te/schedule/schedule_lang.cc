@@ -29,7 +29,6 @@
 #include <unordered_set>
 
 #include "graph.h"
-#include "promote_datatype.h"
 
 namespace tvm {
 namespace te {
@@ -636,17 +635,13 @@ Schedule::Schedule(Array<Operation> ops) {
   for (Operation x : ops) {
     output_set.insert(x);
   }
-  Map<Operation, Operation> omap = PromoteDataType(ops);
   for (Operation op : post_order) {
-    CHECK(omap.count(op) != 0);
-    Operation new_op = omap[op];
-    Stage stage(new_op);
-    stage->origin_op = op;
+    Stage stage(op);
     stage->is_output = output_set.count(op) != 0;
     n->stages.push_back(stage);
     n->stage_map.Set(op, stage);
     // mark scan updates.
-    if (const ScanOpNode* scan = new_op.as<ScanOpNode>()) {
+    if (const ScanOpNode* scan = op.as<ScanOpNode>()) {
       Array<Tensor> inputs;
       for (Tensor t : scan->state_placeholder) {
         inputs.push_back(t);

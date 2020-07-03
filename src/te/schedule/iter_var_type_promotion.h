@@ -122,17 +122,19 @@ class IterVarRelationRewriter {
     vmap_(vmap), target_dtype_(target_dtype) {}
 
   IterVarRelation operator()(const IterVarRelation& ivrel) {
+    IterVarRelation ret;
     if (const auto* rel = ivrel.as<SplitNode>()) {
-      VisitRel_(rel);
+      ret = VisitRel_(rel);
     } else if (const auto* rel = ivrel.as<FuseNode>()) {
-      VisitRel_(rel);
+      ret = VisitRel_(rel);
     } else if (const auto* rel = ivrel.as<RebaseNode>()) {
-      VisitRel_(rel);
+      ret = VisitRel_(rel);
     } else if (const auto* rel = ivrel.as<SingletonNode>()) {
-      VisitRel_(rel);
-    } 
-    LOG(FATAL) << "Invalid IterVarRelation: " << ivrel->GetTypeKey();
-    return IterVarRelation();
+      ret = VisitRel_(rel);
+    } else {
+      LOG(FATAL) << "Invalid IterVarRelation: " << ivrel->GetTypeKey();
+    }
+    return ret;
   }
 
   IterVarRelation VisitRel_(const SplitNode* rel) {

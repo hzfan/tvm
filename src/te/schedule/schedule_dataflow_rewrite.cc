@@ -740,8 +740,9 @@ void PromoteIterVarType(ScheduleNode* sch) {
       UpdateArray(s->leaf_iter_vars, axis_func);
     s->leaf_iter_vars = new_leaf_iter_vars;
     // Update Stage::store_predicate
-    PrimExpr new_store_predicate = 
-      expr_func(s->store_predicate);
+    PrimExpr new_store_predicate = s->store_predicate.defined() ?
+                                   expr_func(s->store_predicate) :
+                                   s->store_predicate;
     s->store_predicate = new_store_predicate;
     // Update relations
     Array<IterVarRelation> new_relations =
@@ -759,9 +760,11 @@ void PromoteIterVarType(ScheduleNode* sch) {
   for (size_t i = 0; i < sch->stages.size(); ++i) {
     Stage s = sch->stages[i];
     // Update attach_ivar
-    CHECK(vmap.find(s->attach_ivar->var) != vmap.end());
-    IterVar new_attach_ivar = vmap[s->attach_ivar->var];
-    s->attach_ivar = new_attach_ivar;
+    if (s->attach_ivar.defined()) {
+      CHECK(vmap.find(s->attach_ivar->var) != vmap.end());
+      IterVar new_attach_ivar = vmap[s->attach_ivar->var];
+      s->attach_ivar = new_attach_ivar;
+    }
   }
 }
 

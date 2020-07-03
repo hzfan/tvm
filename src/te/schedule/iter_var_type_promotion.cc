@@ -65,7 +65,9 @@ DataType GetTargetDataType(Array<IterVar> vars) {
 
 IterVar MakeIterVar(DataType dtype, IterVar iv) {
   Var v = Var(iv->var->name_hint, dtype);
-  Range dom = Range(cast(dtype, iv->dom->min), cast(dtype, iv->dom->extent));
+  Range dom = iv->dom.defined() ?
+              Range(cast(dtype, iv->dom->min), cast(dtype, iv->dom->extent)) :
+              iv->dom;
   return IterVar(dom, v, iv->iter_type, iv->thread_tag);
 }
 

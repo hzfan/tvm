@@ -121,21 +121,5 @@ PrimExpr DataTypeRewriter::VisitExpr_(const CallNode* op) {
   return e;
 }
 
-IterVarRelation RewriteIterVarRelation(IterVarRelation ivrel, DataType dtype) {
-  
-IterVarRelation RewriteIterVarRelation(IterVarRelation ivrel, DataType dtype) {
-  if (const auto* rel = ivrel.as<SplitNode>()) {
-
-  } else if (const auto* rel = ivrel.as<FuseNode>()) {
-
-  } else if (const auto* rel = ivrel.as<RebaseNode>()) {
-
-  } else if (const auto* rel = ivrel.as<SingletonNode>()) {
-
-  } 
-  LOG(FATAL) << "Invalid IterVarRelation: " << ivrel->GetTypeKey();
-  return IterVarRelation();
-}
-
 }  // namespace te
 }  // namespace tvm

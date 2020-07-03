@@ -694,8 +694,11 @@ void PromoteIterVarType(ScheduleNode* sch) {
 
   // Maps from original tensors to tensors after promotion
   std::unordered_map<Tensor, Tensor> tmap;
+  // Maps from original operation to operation after promotion
+  std::unordered_map<Operation, Operation> omap;
   // Maps from original variables to variables after promotion
   Map<Var, IterVar> vmap;
+  // Update ScheduleNode::stages
   for (size_t i = 0; i < sch->stages.size(); ++i) {
     Stage s = sch->stages[i];
     const Operation& op = s->op;
@@ -730,6 +733,7 @@ void PromoteIterVarType(ScheduleNode* sch) {
     for (int i = 0; i < op->num_outputs(); ++i) {
       tmap[op.output(i)] = new_op.output(i);
     }
+    omap[s->op] = new_op;
     s->op = new_op;
     // Update Stage::all_iter_vars
     Array<IterVar> new_all_iter_vars = 
@@ -766,6 +770,12 @@ void PromoteIterVarType(ScheduleNode* sch) {
       s->attach_ivar = new_attach_ivar;
     }
   }
+  // Update ScheduleNode::outputs
+  Array<Operation> new_outputs =
+    UpdateArray(sch->outputs, [omap](Operation op) {
+      return omap[op];
+    });
+  sch->outputs = new_outputs;
 }
 
 Schedule Schedule::normalize() {

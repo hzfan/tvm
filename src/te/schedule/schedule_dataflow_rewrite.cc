@@ -770,14 +770,14 @@ void PromoteIterVarType(ScheduleNode* sch) {
       s->attach_ivar = new_attach_ivar;
     }
   }
-  // Update ScheduleNode::outputs
-  Array<Operation> new_outputs =
-    UpdateArray(sch->outputs, [omap](Operation op) {
-      auto it = omap.find(op);
-      CHECK(it != omap.end());
-      return it->second;
-    });
-  sch->outputs = new_outputs;
+  // // Update ScheduleNode::outputs
+  // Array<Operation> new_outputs =
+  //   UpdateArray(sch->outputs, [omap](Operation op) {
+  //     auto it = omap.find(op);
+  //     CHECK(it != omap.end());
+  //     return it->second;
+  //   });
+  // sch->outputs = new_outputs;
 }
 
 Schedule Schedule::normalize() {

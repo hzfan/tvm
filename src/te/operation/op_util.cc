@@ -85,7 +85,8 @@ std::vector<std::vector<Stmt> > MakeLoopNest(const Stage& stage,
       IterVar bind_thread = stage->iter_var_attrs[iv]->bind_thread;
       if (bind_thread.defined()) bind_iv = bind_thread;
     }
-    CHECK(dom_map.find(iv) != dom_map.end());
+    CHECK(dom_map.find(iv) != dom_map.end())
+      << "Cannot determine the range of " << iv;
     Range dom = dom_map.at(iv);
 
     // initialize the offset and loop_level

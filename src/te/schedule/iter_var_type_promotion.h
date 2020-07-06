@@ -58,7 +58,7 @@ namespace te {
 
 DataType GetTargetDataType(Array<IterVar> vars);
 
-IterVar MakeIterVar(DataType dtype, IterVar iv);
+// IterVar MakeIterVar(DataType dtype, IterVar iv);
 
 IterVar UpdateIterVar(Map<Var, IterVar>* vmap, DataType dtype, IterVar iv);
 
@@ -79,13 +79,7 @@ class DataTypeRewriter : public ExprMutator {
     std::vector<IterVar> ivs;
     ivs.reserve(op->axis.size());
     for (const auto& iv : op->axis) {
-      IterVar new_iv;
-      if (vmap_->find(iv->var) == vmap_->end()) {
-        new_iv = MakeIterVar(target_dtype_, iv);
-        vmap_->Set(iv->var, new_iv);
-      } else {
-        new_iv = vmap_->at(iv->var);
-      }
+      IterVar new_iv = UpdateIterVar(vmap_, target_dtype_, iv);
       ivs.push_back(new_iv);
     }
     Array<IterVar> new_axis(ivs.begin(), ivs.end());

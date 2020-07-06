@@ -63,19 +63,17 @@ DataType GetTargetDataType(Array<IterVar> vars) {
   return DataType::Int(bits);
 }
 
-IterVar MakeIterVar(DataType dtype, IterVar iv) {
-  Var v = Var(iv->var->name_hint, dtype);
-  Range dom = iv->dom.defined() ?
-              Range(cast(dtype, iv->dom->min), cast(dtype, iv->dom->extent)) :
-              iv->dom;
-  return IterVar(dom, v, iv->iter_type, iv->thread_tag);
-}
-
 IterVar UpdateIterVar(Map<Var, IterVar>* vmap, DataType dtype, IterVar iv) {
     if (vmap->find(iv->var) != vmap->end()) {
       return vmap->at(iv->var);
     }
-    IterVar new_iv = MakeIterVar(dtype, iv);
+    DataTypeRewriter rewriter(vmap, dtype);
+    Var v = Var(iv->var->name_hint + "_casted", dtype);
+    Range dom =
+      iv->dom.defined() ?
+      Range(cast(dtype, rewriter(iv->dom->min)), cast(dtype, rewriter(iv->dom->extent))) :
+      iv->dom;
+    IterVar new_iv = IterVar(dom, v, iv->iter_type, iv->thread_tag);
     vmap->Set(iv->var, new_iv);
     return new_iv;
 }

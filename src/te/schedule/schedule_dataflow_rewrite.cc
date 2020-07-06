@@ -779,8 +779,13 @@ void PromoteIterVarType(ScheduleNode* sch) {
     // Update iter_var_attrs
     Map<IterVar, IterVarAttr> new_iter_var_attrs;
     for (const auto& it : s->iter_var_attrs) {
-      IterVar key = axis_func(it.first);
-      new_iter_var_attrs.Set(key, it.second);
+      IterVar new_var = axis_func(it.first);
+      IterVarAttr attr = it.second;
+      IterVar new_bind_thread = axis_func(attr->bind_thread);
+      IterVarAttr new_attr = IterVarAttr(attr->iter_type, new_bind_thread,
+        attr->prefetch_data, attr->prefetch_offset, attr->tensor_intrin, attr->dim_align_factor,
+        attr->dim_align_offset, attr->pragma_keys, attr->pragma_values);
+      new_iter_var_attrs.Set(new_var, new_attr);
     }
     s->iter_var_attrs = new_iter_var_attrs;
   }

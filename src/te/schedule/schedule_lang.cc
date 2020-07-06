@@ -310,6 +310,22 @@ Stage& Stage::tile(IterVar x_parent, IterVar y_parent, PrimExpr x_factor, PrimEx
   return *this;
 }
 
+IterVarAttr::IterVarAttr(IterVarType iter_type, IterVar bind_thread, Array<Tensor> prefetch_data,
+                         Array<PrimExpr> prefetch_offset, TensorIntrin tensor_intrin, int dim_align_factor,
+                         int dim_align_offset, Array<PrimExpr> pragma_keys, Array<PrimExpr> pragma_values) {
+  ObjectPtr<IterVarAttrNode> n = make_object<IterVarAttrNode>();
+  n->iter_type = iter_type;
+  n->bind_thread = bind_thread;
+  n->prefetch_data = prefetch_data;
+  n->prefetch_offset = prefetch_offset;
+  n->tensor_intrin = tensor_intrin;
+  n->dim_align_factor = dim_align_factor;
+  n->dim_align_offset = dim_align_offset;
+  n->pragma_keys = pragma_keys;
+  n->pragma_values = pragma_values;
+  data_ = std::move(n);
+}
+
 template <typename FUpdate>
 inline void UpdateIterVarAttr(StageNode* self, IterVar var, FUpdate fupdate,
                               bool need_leaf = true) {

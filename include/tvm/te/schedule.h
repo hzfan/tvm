@@ -413,6 +413,9 @@ class IterVarRelation : public ObjectRef {
 class IterVarAttr : public ObjectRef {
  public:
   IterVarAttr() {}
+  TVM_DLL IterVarAttr(IterVarType iter_type, IterVar bind_thread, Array<Tensor> prefetch_data,
+                      Array<PrimExpr> prefetch_offset, TensorIntrin tensor_intrin, int dim_align_factor,
+                      int dim_align_offset, Array<PrimExpr> pragma_keys, Array<PrimExpr> pragma_values);
   explicit IterVarAttr(ObjectPtr<Object> n) : ObjectRef(n) {}
   /*!
    * \brief access the internal node container

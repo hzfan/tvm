@@ -40,6 +40,7 @@ def lower_sch(sch, args, target_bits):
         else:
             raise ValueError("args must be Tensor, Buffer or Var")
     sch = sch.normalize()
+    sch = sch.promote_iter_var_dtype()
     bounds = te.schedule.InferBound(sch)
     stmt = te.schedule.ScheduleOps(sch, bounds)
 

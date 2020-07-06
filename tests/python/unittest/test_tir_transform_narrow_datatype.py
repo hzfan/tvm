@@ -40,7 +40,7 @@ def lower_sch(sch, args, target_bits):
         else:
             raise ValueError("args must be Tensor, Buffer or Var")
     sch = sch.normalize()
-    sch = sch.promote_iter_var_dtype()
+    sch = sch.promote_iter_var_type()
     bounds = te.schedule.InferBound(sch)
     stmt = te.schedule.ScheduleOps(sch, bounds)
 
@@ -162,7 +162,7 @@ def test_reduce():
     check(const(64, dtype='int64'), 32, 'int32')
     # i32 -> i16
     check(const(64, dtype='int32'), 16, 'int16')
-    check(const(2**16, dtype='int32'), 16, 'int32')
+    check(const(2**16, dtype='int32'), 16, 'int64')
     # symbolic
     check(te.var('n', dtype='int32'), 32, 'int32')
     check(te.var('n', dtype='int64'), 32, 'int64')

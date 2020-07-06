@@ -728,8 +728,26 @@ void PromoteIterVarType(ScheduleNode* sch) {
     if (compute) {
       Array<IterVar> new_ivs
         = UpdateArray(compute->axis, axis_func);
-      Array<PrimExpr> new_body
-        = UpdateArray(compute->body, expr_func);
+      Array<PrimExpr> new_body;
+      if (const ReduceNode* reduce_0 = compute->body[0].as<ReduceNode>()) {
+        // special handling for multiple reductions.
+        for (size_t j = 1; j < compute->body.size(); ++j) {
+          const ReduceNode* reduce = compute->body[j].as<ReduceNode>();
+          CHECK(reduce);
+          CHECK(ReduceEqual(reduce_0, reduce)) << "The Reduce inputs of ComputeOp should "
+                                               << "have the same attribute except value_index";
+        }
+        const ReduceNode* new_value = expr_func(GetRef<PrimExpr>(reduce_0)).as<ReduceNode>();
+        CHECK(new_value);
+        for (size_t j = 0; j < compute->body.size(); ++j) {
+          auto n = make_object<ReduceNode>(*new_value);
+          n->value_index = static_cast<int>(j);
+          n->dtype = new_value->source[j].dtype();
+          new_body.push_back(PrimExpr(n));
+        }
+      } else {
+        new_body  = UpdateArray(compute->body, expr_func);
+      }
       new_op = ComputeOp(compute->name, compute->tag, compute->attrs, new_ivs, new_body);
     } else {
       new_op = op;

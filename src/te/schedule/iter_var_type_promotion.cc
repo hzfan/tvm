@@ -68,7 +68,7 @@ IterVar UpdateIterVar(Map<Var, IterVar>* vmap, DataType dtype, IterVar iv) {
       return vmap->at(iv->var);
     }
     DataTypeRewriter rewriter(vmap, dtype);
-    Var v = Var(iv->var->name_hint + "_casted", dtype);
+    Var v = Var(iv->var->name_hint, dtype);
     Range dom =
       iv->dom.defined() ?
       Range(cast(dtype, rewriter(iv->dom->min)), cast(dtype, rewriter(iv->dom->extent))) :

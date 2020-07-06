@@ -433,20 +433,20 @@ def test_bound_simplification_failure():
     _check(te.compute((10,), lambda i: A[i]))
 
 if __name__ == "__main__":
-    test_bound_nest_thread()
+    test_bound_nest_thread()  # error
     test_bound1()
-    test_bound_nest_group()
-    test_bound_group_schedule()
-    test_bound_scan()
+    test_bound_nest_group()  # error
+    test_bound_group_schedule()  # error
+    test_bound_scan()  # error
     test_bound3()
-    test_bound_rfactor()
-    test_bound_blur()
-    test_bound_conv1d()
+    test_bound_rfactor()  # error
+    test_bound_blur()  # error
+    test_bound_conv1d()  # error
     test_bound2()
-    test_gemm_bound()
+    test_gemm_bound()  # error
     test_bound_warp()
     test_bound_tensor_compute_op()
-    test_bound_simplification_failure()
+    test_bound_simplification_failure()  # error
     test_bound_fusesplit1()
     test_bound_fusesplit2()
     test_bound_split_divisible()

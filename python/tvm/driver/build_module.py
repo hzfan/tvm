@@ -105,6 +105,7 @@ def form_irmodule(sch, args, name, binds):
     # normalize schedule first
     pass_ctx = PassContext.current()
     sch = sch.normalize()
+    sch = sch.promote_iter_var_type()
     bounds = schedule.InferBound(sch)
     stmt = schedule.ScheduleOps(sch, bounds)
 

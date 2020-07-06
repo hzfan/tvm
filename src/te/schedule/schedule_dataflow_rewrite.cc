@@ -708,13 +708,22 @@ void PromoteIterVarType(ScheduleNode* sch) {
     DataType dtype = GetTargetDataType(ivs);
     // Helper functions
     auto axis_func = [&vmap, dtype](const IterVar& iv) {
+      if (!iv.defined()) {
+        return iv;
+      }
       return UpdateIterVar(&vmap, dtype, iv);
     };
     auto expr_func = [&vmap, dtype](const PrimExpr& e) {
+      if (!e.defined()) {
+        return e;
+      }
       DataTypeRewriter rewriter(&vmap, dtype);
       return rewriter(e);
     };
     auto rel_func = [&vmap, dtype](const IterVarRelation& rel) {
+      if (!rel.defined()) {
+        return rel;
+      }
       IterVarRelationRewriter rewriter(&vmap, dtype);
       return rewriter(rel);
     };
@@ -768,9 +777,7 @@ void PromoteIterVarType(ScheduleNode* sch) {
       UpdateArray(s->leaf_iter_vars, axis_func);
     s->leaf_iter_vars = new_leaf_iter_vars;
     // Update Stage::store_predicate
-    PrimExpr new_store_predicate = s->store_predicate.defined() ?
-                                   expr_func(s->store_predicate) :
-                                   s->store_predicate;
+    PrimExpr new_store_predicate = expr_func(s->store_predicate);
     s->store_predicate = new_store_predicate;
     // Update relations
     Array<IterVarRelation> new_relations =

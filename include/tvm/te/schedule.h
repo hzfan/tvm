@@ -369,6 +369,8 @@ class Schedule : public ObjectRef {
    * \return The created factored tensors.
    */
   TVM_DLL Array<Tensor> rfactor(const Tensor& tensor, const IterVar& axis, int factor_axis = 0);
+
+  TVM_DLL Schedule promote_iter_var_type();
   /*!
    * \brief Normalize the schedule.
    *  This is needed before bound inference.

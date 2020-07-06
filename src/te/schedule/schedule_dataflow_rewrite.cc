@@ -822,7 +822,6 @@ void PromoteIterVarType(ScheduleNode* sch) {
 Schedule Schedule::normalize() {
   Schedule sn = copy();
   InjectInline(sn.operator->());
-  PromoteIterVarType(sn.operator->());
   RebaseNonZeroMinLoop(sn.operator->());
   LegalizeInvalidAttach(sn.operator->());
   return sn;
@@ -1028,5 +1027,12 @@ Array<Tensor> Schedule::rfactor(const Tensor& tensor, const IterVar& axis, int f
   reduce_stage->relations = Array<IterVarRelation>();
   return factor_tensors;
 }
+
+Schedule Schedule::promote_iter_var_type() {
+  Schedule sn = copy();
+  PromoteIterVarType(sn.operator->());
+  return sn;
+}
+
 }  // namespace te
 }  // namespace tvm

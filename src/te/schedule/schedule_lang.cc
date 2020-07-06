@@ -906,6 +906,8 @@ TVM_REGISTER_GLOBAL("te.ScheduleCacheWrite").set_body([](TVMArgs args, TVMRetVal
 
 TVM_REGISTER_GLOBAL("te.ScheduleRFactor").set_body_method(&Schedule::rfactor);
 
+TVM_REGISTER_GLOBAL("te.SchedulePromoteIterVarType").set_body_method(&Schedule::promote_iter_var_type);
+
 TVM_REGISTER_GLOBAL("te.CreateSpecializedCondition").set_body_typed([](Array<PrimExpr> condition) {
   return SpecializedCondition(condition);
 });

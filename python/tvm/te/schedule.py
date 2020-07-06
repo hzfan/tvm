@@ -85,6 +85,9 @@ class Schedule(Object):
         """
         return _ffi_api.ScheduleNormalize(self)
 
+    def promote_iter_var_type(self):
+        return _ffi_api.SchedulePromoteIterVarType(self)
+
     def create_group(self, outputs, inputs, include_inputs=False):
         """Create stage group by giving output and input boundary.
 

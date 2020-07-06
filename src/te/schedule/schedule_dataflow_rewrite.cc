@@ -737,12 +737,13 @@ void PromoteIterVarType(ScheduleNode* sch) {
           CHECK(ReduceEqual(reduce_0, reduce)) << "The Reduce inputs of ComputeOp should "
                                                << "have the same attribute except value_index";
         }
-        const ReduceNode* new_value = expr_func(GetRef<PrimExpr>(reduce_0)).as<ReduceNode>();
-        CHECK(new_value);
+        PrimExpr new_value = expr_func(GetRef<PrimExpr>(reduce_0));
+        const ReduceNode* new_reduce = new_value.as<ReduceNode>();
+        CHECK(new_reduce);
         for (size_t j = 0; j < compute->body.size(); ++j) {
-          auto n = make_object<ReduceNode>(*new_value);
+          auto n = make_object<ReduceNode>(*new_reduce);
           n->value_index = static_cast<int>(j);
-          n->dtype = new_value->source[j].dtype();
+          n->dtype = new_reduce->source[j].dtype();
           new_body.push_back(PrimExpr(n));
         }
       } else {

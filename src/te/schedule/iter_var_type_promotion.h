@@ -76,6 +76,7 @@ class DataTypeRewriter : public ExprMutator {
   }
 
   PrimExpr VisitExpr_(const ReduceNode* op) final {
+    // Update axis
     std::vector<IterVar> ivs;
     ivs.reserve(op->axis.size());
     for (const auto& iv : op->axis) {
@@ -83,8 +84,21 @@ class DataTypeRewriter : public ExprMutator {
       ivs.push_back(new_iv);
     }
     Array<IterVar> new_axis(ivs.begin(), ivs.end());
-    Reduce new_op = Reduce(op->combiner, op->source, new_axis, op->condition, op->value_index);
-    return  ExprMutator::VisitExpr_(new_op.as<ReduceNode>());
+    // Update combiner
+    auto fvar = [this](const Var& v) {
+      return Downcast<Var>(VisitExpr(v));
+    };
+    auto fexpr = [this](const PrimExpr& e) {
+      return VisitExpr(e);
+    };
+    Array<Var> lhs = UpdateArray(op->combiner->lhs, fvar);
+    Array<Var> rhs = UpdateArray(op->combiner->rhs, fvar);
+    Array<PrimExpr> result = UpdateArray(op->combiner->result, fexpr);
+    Array<PrimExpr> identity_element = UpdateArray(op->combiner->identity_element, fexpr);
+    CommReducer combiner = CommReducer(lhs, rhs, result, identity_element);
+
+    Reduce new_op = Reduce(combiner, op->source, new_axis, op->condition, op->value_index);
+    return ExprMutator::VisitExpr_(new_op.as<ReduceNode>());
   }
 
   PrimExpr VisitExpr_(const AddNode* op) final;

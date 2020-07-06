@@ -579,9 +579,9 @@ def test_local_stage_predicate2():
 
 if __name__ == "__main__":
     test_loop_dep_reduce()
-    test_loop_dep_reduce_cache_write()
+    test_loop_dep_reduce_cache_write()  # error
     test_schedule_middle_cache()
-    test_inline_multi_reduce()
+    test_inline_multi_reduce()  # error
     test_schedule_cache_relayout4()
     test_schedule_cache_relayout3()
     test_schedule_cache_relayout2()
@@ -591,15 +591,15 @@ if __name__ == "__main__":
     test_scan_inline2()
     test_inline_mixed()
     test_auto_inline()
-    test_schedule_scan()
+    test_schedule_scan()  # error
     test_schedule0()
     test_schedule1()
     test_schedule2()
     test_schedule_cache()
     test_schedule_tensor_compute1()
     test_schedule_tensor_compute2()
-    test_schedule_tensor_compute3()
+    test_schedule_tensor_compute3()  # error
     test_reduction_and_dummy_fuse_split()
     test_schedule_compute_inline()
-    test_local_stage_predicate()
-    test_local_stage_predicate2()
+    test_local_stage_predicate()  # error
+    test_local_stage_predicate2()  # error

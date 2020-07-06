@@ -789,9 +789,12 @@ void PromoteIterVarType(ScheduleNode* sch) {
     Stage s = sch->stages[i];
     // Update attach_ivar
     if (s->attach_ivar.defined()) {
-      CHECK(vmap.find(s->attach_ivar->var) != vmap.end());
-      IterVar new_attach_ivar = vmap[s->attach_ivar->var];
-      s->attach_ivar = new_attach_ivar;
+       if (vmap.find(s->attach_ivar->var) != vmap.end()) {
+        // This condition is not guranteed, because operations other than
+        // compute are temporarily skipped
+        IterVar new_attach_ivar = vmap[s->attach_ivar->var];
+        s->attach_ivar = new_attach_ivar;
+      }
     }
   }
   // // Update ScheduleNode::outputs

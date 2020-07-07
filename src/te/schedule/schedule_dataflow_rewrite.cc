@@ -720,6 +720,13 @@ void PromoteIterVarType(ScheduleNode* sch) {
       DataTypeRewriter rewriter(&vmap, dtype);
       return rewriter(e);
     };
+    auto casted_expr_func = [&vmap, dtype](const PrimExpr& e) {
+      if (!e.defined()) {
+        return e;
+      }
+      DataTypeRewriter rewriter(&vmap, dtype);
+      return cast(e.dtype(), rewriter(e));
+    };
     auto rel_func = [&vmap, dtype](const IterVarRelation& rel) {
       if (!rel.defined()) {
         return rel;
@@ -752,7 +759,7 @@ void PromoteIterVarType(ScheduleNode* sch) {
           new_body.push_back(PrimExpr(n));
         }
       } else {
-        new_body  = UpdateArray(compute->body, expr_func);
+        new_body  = UpdateArray(compute->body, casted_expr_func);
       }
       new_op = ComputeOp(compute->name, compute->tag, compute->attrs, new_ivs, new_body);
     } else {

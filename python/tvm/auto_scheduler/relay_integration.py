@@ -280,7 +280,8 @@ def auto_schedule_topi(outs):
     except tvm.error.TVMError as err:
         logger.info("Failed to create a ComputeDAG for auto_scheduler: %s", str(err))
         return None
-
+    print("dag:")
+    print(dag)
     key = register_workload_tensors(dag.hash_key(), io_tensors)
     target = tvm.target.Target.current()
 

@@ -73,6 +73,7 @@ PackedFunc WrapPackedFunc(TVMBackendPackedCFunc faddr, const ObjectPtr<Object>& 
   return PackedFunc([faddr, sptr_to_self](TVMArgs args, TVMRetValue* rv) {
     TVMValue ret_value;
     int ret_type_code = kTVMNullptr;
+    LOG(INFO) << "args.num_args: " << args.num_args;
     int ret = (*faddr)(const_cast<TVMValue*>(args.values), const_cast<int*>(args.type_codes),
                        args.num_args, &ret_value, &ret_type_code, nullptr);
     ICHECK_EQ(ret, 0) << TVMGetLastError();

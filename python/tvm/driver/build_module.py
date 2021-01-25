@@ -205,6 +205,7 @@ def lower(sch, args, name="main", binds=None, simple_mode=False):
 
     optimize = tvm.transform.Sequential(pass_list)
     mod = optimize(mod)
+    print(mod[name])
     return mod
 
 
@@ -231,6 +232,7 @@ def _build_for_device(input_mod, target, target_host):
     mdev : tvm.module
         A module that contains device code.
     """
+    print(type(input_mod))
     target = Target(target)
     target_host = Target(target_host)
     device_type = ndarray.context(target.kind.name, 0).device_type
@@ -253,7 +255,10 @@ def _build_for_device(input_mod, target, target_host):
         tvm.tir.transform.SplitHostDevice(),
     ]
     mod_mixed = tvm.transform.Sequential(opt_mixed)(mod_mixed)
-
+    vs = mod_mixed.get_global_vars()
+    for v in vs:
+        print(v)
+        print(mod_mixed[v])
     # device optimizations
     opt_device = tvm.transform.Sequential(
         [
@@ -295,6 +300,8 @@ def _build_for_device(input_mod, target, target_host):
         )
 
     rt_mod_dev = codegen.build_module(mod_dev, target) if len(mod_dev.functions) != 0 else None
+    print(type(rt_mod_dev))
+    print(rt_mod_dev.get_source())
     return mod_host, rt_mod_dev
 
 
@@ -419,7 +426,7 @@ def build(inputs, args=None, target=None, target_host=None, name="default_functi
 
     # Generate a unified host module.
     rt_mod_host = codegen.build_module(mod_host_all, target_host)
-
+    # print(rt_mod_host.get_source())
     # Import all modules.
     for mdev in device_modules:
         if mdev:

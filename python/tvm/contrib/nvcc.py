@@ -88,7 +88,7 @@ def compile_cuda(code, target="ptx", arch=None, options=None, path_target=None):
 
     cmd += ["-o", file_target]
     cmd += [temp_code]
-
+    print(cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     (out, _) = proc.communicate()
